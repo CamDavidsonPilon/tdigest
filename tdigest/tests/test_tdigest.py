@@ -1,6 +1,6 @@
 import pytest
 
-from .tdigest import TDigest, Centroid
+from tdigest.tdigest import TDigest, Centroid
 
 
 @pytest.fixture()
@@ -44,9 +44,9 @@ class TestTDigest():
         empty_tdigest.C = example_centroids
         empty_tdigest.n = 3 
 
-        print empty_tdigest._compute_centroid_quantile(example_centroids[0])
-        print empty_tdigest._compute_centroid_quantile(example_centroids[1])
-        print empty_tdigest._compute_centroid_quantile(example_centroids[2])
-        assert False
+        assert empty_tdigest._compute_centroid_quantile(example_centroids[0]) == (1/2. + 0) / 3
+        assert empty_tdigest._compute_centroid_quantile(example_centroids[1]) == (1/2. + 1) / 3
+        assert empty_tdigest._compute_centroid_quantile(example_centroids[2]) == (1/2. + 2) / 3
+
 
 

@@ -17,6 +17,10 @@ class Centroid(object):
     def __repr__(self):
         return """<Centroid: mean=%.4f, count=%d>"""%(self.mean, self.count) 
 
+
+    def __eq__(self, other):
+        return self.mean == other.mean and self.count == other.count
+
 class TDigest(object):
 
 
@@ -41,17 +45,31 @@ class TDigest(object):
     def __len__(self):
         return len(self.C)
 
+
+    def __repr__(self):
+        return """<T-Digest: n=%d, centroids=%d>"""%(self.n, len(self)) 
+
+
     def _add_centroid(self, centroid):
         means = map(lambda c: c.mean, self.C)
         ix = bisect.bisect(means, centroid.mean)
         self.C.insert(ix, centroid)
         return
 
+
     def _compute_centroid_quantile(self, centroid):
         denom = self.n
         cumulative_sum = sum(c_i.count for c_i in self.C if c_i.mean < centroid.mean)
         return (centroid.count / 2. + cumulative_sum)/denom
 
+
+    def batch_update(self, values):
+        w = 1
+        for x in values:
+            self.update((x, w))
+        return
+
+s
     def update(self, (x, w)):
         self.n += w
 
@@ -59,7 +77,8 @@ class TDigest(object):
             self._add_centroid(Centroid(x, w))
             return
 
-        # terrible way to get the argmin. This also doesn't account for ties so has a natural bias. 
+        # terrible way to get the argmin. This also doesn't account for ties so has a natural bias. Works 
+        # best for non-intergers inputs 
         ix, _ = min(enumerate(abs(c_i.mean - x) for c_i in self.C), key=itemgetter(1))
         S = [self.C[ix]]
 
@@ -88,6 +107,7 @@ class TDigest(object):
             self.compress()
         
         return 
+
 
     def compress(self):
         T = TDigest(self.delta, self.K)
@@ -133,11 +153,6 @@ class TDigest(object):
             t += self.C[i].count 
         return 1
 
- 
-    def __repr__(self):
-        return """<T-Digest: n=%d, centroids=%d>"""%(self.n, len(self)) 
-
-
 
 if __name__=='__main__':
     from numpy import random
@@ -160,7 +175,7 @@ if __name__=='__main__':
         T3.update(x)
 
     T = T1 + T2 + T3
-    print len(T.C)
+    print len(T)
     print T.percentile(0.1)
     print np.log(1/0.9)
 

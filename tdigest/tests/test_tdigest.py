@@ -1,3 +1,4 @@
+from bintrees import BinaryTree
 import pytest
 
 from tdigest.tdigest import TDigest, Centroid
@@ -9,11 +10,11 @@ def empty_tdigest():
 
 @pytest.fixture()
 def example_centroids():
-    return [
-        Centroid(0.5, 1),
-        Centroid(1.1, 1),
-        Centroid(1.5, 1),
-    ]
+    return BinaryTree([
+        (0.5, Centroid(0.5, 1)),
+        (1.1, Centroid(1.1, 1)),
+        (1.5, Centroid(1.5, 1)),
+    ])
 
 
 class TestTDigest():
@@ -23,30 +24,37 @@ class TestTDigest():
         empty_tdigest.C = example_centroids
         new_centroid = Centroid(0.9, 1)
         empty_tdigest._add_centroid(new_centroid)
-        assert empty_tdigest.C == [
-            Centroid(0.5, 1),
-            new_centroid,
-            Centroid(1.1, 1),
-            Centroid(1.5, 1),
-        ]
+        assert (empty_tdigest.C - BinaryTree([
+            (0.5, Centroid(0.5, 1)),
+            (new_centroid.mean, new_centroid), 
+            (1.1, Centroid(1.1, 1)),
+            (1.5, Centroid(1.5, 1)),
+        ])).is_empty()
 
         last_centroid = Centroid(10., 1)
         empty_tdigest._add_centroid(last_centroid)
-        assert empty_tdigest.C == [
-            Centroid(0.5, 1),
-            new_centroid,
-            Centroid(1.1, 1),
-            Centroid(1.5, 1),
-            last_centroid
-        ]    
+        assert (empty_tdigest.C - BinaryTree([
+            (0.5, Centroid(0.5, 1)),
+            (new_centroid.mean, new_centroid), 
+            (1.1, Centroid(1.1, 1)),
+            (1.5, Centroid(1.5, 1)),
+            (last_centroid.mean, last_centroid), 
+        ])).is_empty()
 
     def test_compute_centroid_quantile(self, empty_tdigest, example_centroids):
         empty_tdigest.C = example_centroids
         empty_tdigest.n = 3 
 
-        assert empty_tdigest._compute_centroid_quantile(example_centroids[0]) == (1/2. + 0) / 3
-        assert empty_tdigest._compute_centroid_quantile(example_centroids[1]) == (1/2. + 1) / 3
-        assert empty_tdigest._compute_centroid_quantile(example_centroids[2]) == (1/2. + 2) / 3
+        assert empty_tdigest._compute_centroid_quantile(example_centroids[0.5]) == (1/2. + 0) / 3
+        assert empty_tdigest._compute_centroid_quantile(example_centroids[1.1]) == (1/2. + 1) / 3
+        assert empty_tdigest._compute_centroid_quantile(example_centroids[1.5]) == (1/2. + 2) / 3
 
 
-
+    def test_get_closest_centroids(self, empty_tdigest, example_centroids):
+        empty_tdigest.C = example_centroids
+        assert empty_tdigest._get_closest_centroids(0.0) == [example_centroids[0.5]]
+        assert empty_tdigest._get_closest_centroids(2.0) == [example_centroids[1.5]]
+        assert empty_tdigest._get_closest_centroids(1.1) == [example_centroids[1.1]]
+        assert empty_tdigest._get_closest_centroids(1.2) == [example_centroids[1.1]]
+        assert empty_tdigest._get_closest_centroids(1.4) == [example_centroids[1.5]]
+        assert empty_tdigest._get_closest_centroids(1.3) == [example_centroids[1.5], example_centroids[1.1]]

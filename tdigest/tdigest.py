@@ -81,6 +81,8 @@ class TDigest(object):
 
         if abs(floor_key - x) < abs(ceil_key - x):
             return [self.C[floor_key]]
+        elif abs(floor_key - x) == abs(ceil_key - x) and (ceil_key != floor_key):
+            return [self.C[ceil_key], self.C[floor_key]]
         else:
             return [self.C[ceil_key]]
 

@@ -1,7 +1,7 @@
 from random import shuffle, random, choice
 import bisect
 from operator import itemgetter
-
+from bintrees import BinaryTree
 
 class Centroid(object):
 
@@ -17,18 +17,22 @@ class Centroid(object):
     def __repr__(self):
         return """<Centroid: mean=%.4f, count=%d>"""%(self.mean, self.count) 
 
+
+    def __eq__(self, other):
+        return self.mean == other.mean and self.count == other.count
+
 class TDigest(object):
 
 
     def __init__(self, delta=0.01, K=50):
-        self.C = []
+        self.C = BinaryTree()
         self.n = 0
         self.delta = delta
         self.K = K
 
     def __add__(self, other_digest):
-        C1 = list(self.C)
-        C2 = list(other_digest.C)
+        C1 = list(self.C.values())
+        C2 = list(other_digest.C.values())
         shuffle(C1)
         shuffle(C2)
         data = C1 + C2
@@ -41,16 +45,47 @@ class TDigest(object):
     def __len__(self):
         return len(self.C)
 
+
+    def __repr__(self):
+        return """<T-Digest: n=%d, centroids=%d>"""%(self.n, len(self)) 
+
+
     def _add_centroid(self, centroid):
-        means = map(lambda c: c.mean, self.C)
-        ix = bisect.bisect(means, centroid.mean)
-        self.C.insert(ix, centroid)
+        self.C.insert(centroid.mean, centroid)
         return
 
     def _compute_centroid_quantile(self, centroid):
         denom = self.n
-        cumulative_sum = sum(c_i.count for c_i in self.C if c_i.mean < centroid.mean)
+        cumulative_sum = sum(c_i.count for c_i in self.C.value_slice(0, centroid.mean))
         return (centroid.count / 2. + cumulative_sum)/denom
+
+
+    def batch_update(self, values):
+        w = 1
+        for x in values:
+            self.update((x, w))
+        return
+
+    def _get_closest_centroids(self, x):
+        try:
+            ceil_key = self.C.ceiling_key(x)
+        except KeyError:
+            floor_key = self.C.floor_key(x)
+            return [self.C[floor_key]]
+
+        try:
+            floor_key = self.C.floor_key(x)
+        except KeyError:
+            ceil_key = self.C.ceiling_key(x)
+            return [self.C[ceil_key]]
+
+        if abs(floor_key - x) < abs(ceil_key - x):
+            return [self.C[floor_key]]
+        elif abs(floor_key - x) == abs(ceil_key - x) and (ceil_key != floor_key):
+            return [self.C[ceil_key], self.C[floor_key]]
+        else:
+            return [self.C[ceil_key]]
+
 
     def update(self, (x, w)):
         self.n += w
@@ -59,13 +94,7 @@ class TDigest(object):
             self._add_centroid(Centroid(x, w))
             return
 
-        # terrible way to get the argmin. This also doesn't account for ties so has a natural bias. 
-        ix, _ = min(enumerate(abs(c_i.mean - x) for c_i in self.C), key=itemgetter(1))
-        S = [self.C[ix]]
-
-        #z = min(abs(c_i.mean - x) for c_i in self.C)
-        #S = filter(lambda c_i: abs(c_i.mean - x) == z, self.C)
-
+        S = self._get_closest_centroids(x)
 
         while len(S) != 0 and w > 0:
             j = choice(range(len(S)))
@@ -77,7 +106,7 @@ class TDigest(object):
                 continue
 
             delta_w = min(4 * self.n * self.delta * q * (1 - q) - c_j.count, w)
-            c_j.update(x, delta_w)
+            self._update_centroid(c_j, x, delta_w)
             w -= delta_w
             S.pop(j)
 
@@ -88,6 +117,11 @@ class TDigest(object):
             self.compress()
         
         return 
+
+    def _update_centroid(self, centroid, x, w):
+        self.C.pop(centroid.mean)
+        centroid.update(x, w)
+        self._add_centroid(centroid)
 
     def compress(self):
         T = TDigest(self.delta, self.K)
@@ -105,63 +139,47 @@ class TDigest(object):
         t = 0
         q *= self.n
 
-        for i in range(len(self)):
-            k = self.C[i].count
+        for i, key in enumerate(self.C.keys()):
+            k = self.C[key].count
             if q < t + k:
                 if i == 0:
-                    delta = self.C[i+1].mean - self.C[i].mean
+                    delta = self.C.succ_item(key)[1].mean - self.C[key].mean
                 elif i == len(self) -1 :
-                    delta = self.C[i].mean - self.C[i-1].mean
+                    delta = self.C[key].mean - self.C.prev_item(key)[1].mean
                 else:
-                    delta = (self.C[i+1].mean - self.C[i-1].mean) / 2.
-                return self.C[i].mean + ((q - t) / k - 0.5) * delta 
+                    delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
+                return self.C[key].mean + ((q - t) / k - 0.5) * delta 
             t += k 
-        return self.C[-1].mean
+        return self.C.max_item()[1].mean
 
 
     def quantile(self, q):
         t = 0
         N = float(self.n)
-        for i in range(len(self)):
+        for i, key in enumerate(self.C.keys()):
             if i == len(self) - 1:
-                delta = (self.C[i].mean - self.C[i-1].mean)/2.
+                delta = (self.C[key].mean - self.C.prev_item(key)[1].mean)/2.
             else:
-                delta = (self.C[i+1].mean - self.C[i].mean)/2.
-            z = max(-1, (q - self.C[i].mean)/delta)
+                delta = (self.C.succ_item(key)[1].mean - self.C[key].mean)/2.
+            z = max(-1, (q - self.C[key].mean)/delta)
             if z < 1:
-                return t / N + self.C[i].count / N * (z + 1) / 2
-            t += self.C[i].count 
+                return t / N + self.C[key].count / N * (z + 1) / 2
+            t += self.C[key].count 
         return 1
-
- 
-    def __repr__(self):
-        return """<T-Digest: n=%d, centroids=%d>"""%(self.n, len(self)) 
-
 
 
 if __name__=='__main__':
     from numpy import random
     import numpy as np
 
-
     T1 = TDigest()
-    for x in xrange(2000):
-        x = (random.exponential(),1)
+    for x in xrange(1000):
+        x = (random.random(),1)
         T1.update(x)
 
-    T2 = TDigest()
-    for x in xrange(2000):
-        x = (random.exponential(),1)
-        T2.update(x)
 
-    T3 = TDigest()
-    for x in xrange(100000):
-        x = (random.exponential(),1)
-        T3.update(x)
+    print T1.percentile(0.1)
+    print T1.quantile(0.1)
 
-    T = T1 + T2 + T3
-    print len(T.C)
-    print T.percentile(0.1)
-    print np.log(1/0.9)
 
 

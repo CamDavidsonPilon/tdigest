@@ -1,3 +1,4 @@
+import random
 from bintrees import BinaryTree
 import pytest
 
@@ -15,6 +16,10 @@ def example_centroids():
         (1.1, Centroid(1.1, 1)),
         (1.5, Centroid(1.5, 1)),
     ])
+
+@pytest.fixture():
+def example_random_data():
+    return [random.random() for _ i xrange(100)]
 
 
 class TestTDigest():
@@ -58,3 +63,12 @@ class TestTDigest():
         assert empty_tdigest._get_closest_centroids(1.2) == [example_centroids[1.1]]
         assert empty_tdigest._get_closest_centroids(1.4) == [example_centroids[1.5]]
         assert empty_tdigest._get_closest_centroids(1.3) == [example_centroids[1.5], example_centroids[1.1]]
+
+
+    def test_compress(self, empty_tdigest, example_random_data):
+        empty_tdigest.batch_update(empty_tdigest)
+        precompress_n, precompress_len = empty_tdigest.n, len(empty_tdigest)
+        empty_tdigest.compress()
+        postcompress_n, postcompress_len = empty_tdigest.n, len(empty_tdigest)
+        assert postcompress_n == precompress_n
+        assert postcompress_len <= precompress_len

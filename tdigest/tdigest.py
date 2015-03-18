@@ -1,7 +1,7 @@
 from random import shuffle, random, choice
 import bisect
 from operator import itemgetter
-from bintrees import BinaryTree
+from bintrees import FastBinaryTree as BinaryTree
 
 class Centroid(object):
 
@@ -17,18 +17,19 @@ class Centroid(object):
     def __repr__(self):
         return """<Centroid: mean=%.4f, count=%d>"""%(self.mean, self.count) 
 
-
     def __eq__(self, other):
         return self.mean == other.mean and self.count == other.count
+
 
 class TDigest(object):
 
 
-    def __init__(self, delta=0.01, K=50):
+    def __init__(self, delta=0.02, K=50):
         self.C = BinaryTree()
         self.n = 0
         self.delta = delta
         self.K = K
+
 
     def __add__(self, other_digest):
         C1 = list(self.C.values())
@@ -41,6 +42,7 @@ class TDigest(object):
             new_digest.update((c.mean, c.count))
 
         return new_digest
+
 
     def __len__(self):
         return len(self.C)
@@ -125,12 +127,11 @@ class TDigest(object):
 
     def compress(self):
         T = TDigest(self.delta, self.K)
-        C = self.C
+        C = list(self.C.values())
         shuffle(C)
         for c_i in C:
             T.update((c_i.mean, c_i.count))
         self.C = T.C
-
 
     def percentile(self, q):
         if not (0 <= q <= 1):
@@ -173,13 +174,14 @@ if __name__=='__main__':
     import numpy as np
 
     T1 = TDigest()
-    for x in xrange(1000):
-        x = (random.random(),1)
-        T1.update(x)
+    x = random.random(size=5000)
+    T1.batch_update(x)
 
-
-    print T1.percentile(0.1)
-    print T1.quantile(0.1)
-
+    print len(T1)
+    print T1.percentile(0.5)
+    print np.percentile(x, 50)
+    T1.compress()
+    print len(T1)
+    print T1.percentile(0.5)
 
 

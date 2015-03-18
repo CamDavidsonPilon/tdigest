@@ -169,7 +169,7 @@ if __name__ == '__main__':
     import numpy as np
 
     T1 = TDigest()
-    x = random.random(size=100000)
+    x = random.random(size=10000)
     T1.batch_update(x)
 
     print len(T1)

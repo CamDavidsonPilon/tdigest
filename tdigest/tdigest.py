@@ -6,8 +6,8 @@ from bintrees import FastBinaryTree as BinaryTree
 class Centroid(object):
 
     def __init__(self, mean, count):
-        self.mean = mean
-        self.count = count
+        self.mean = float(mean)
+        self.count = float(count)
 
     def update(self, x, delta_weight):
         self.count += delta_weight

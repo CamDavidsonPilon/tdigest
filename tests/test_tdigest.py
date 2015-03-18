@@ -17,9 +17,9 @@ def example_centroids():
         (1.5, Centroid(1.5, 1)),
     ])
 
-@pytest.fixture():
+@pytest.fixture()
 def example_random_data():
-    return [random.random() for _ i xrange(100)]
+    return [random.random() for _ in xrange(100)]
 
 
 class TestTDigest():
@@ -66,9 +66,35 @@ class TestTDigest():
 
 
     def test_compress(self, empty_tdigest, example_random_data):
-        empty_tdigest.batch_update(empty_tdigest)
+        empty_tdigest.batch_update(example_random_data)
         precompress_n, precompress_len = empty_tdigest.n, len(empty_tdigest)
         empty_tdigest.compress()
         postcompress_n, postcompress_len = empty_tdigest.n, len(empty_tdigest)
         assert postcompress_n == precompress_n
         assert postcompress_len <= precompress_len
+
+
+
+
+class TestCentroid():
+
+    def test_update(self):
+        c = Centroid(0,0)
+        value, weight = 1, 1
+        c.update(value, weight)
+        assert c.count == 1
+        assert c.mean == 1
+
+        value, weight = 2, 1
+        c.update(value, weight)
+        assert c.count == 2
+        assert c.mean == (2+1.)/2.
+
+        value, weight = 1, 2
+        c.update(value, weight)
+        assert c.count == 4
+        assert c.mean == 1*1/4. + 2*1/4. + 1*2/4.
+
+
+
+

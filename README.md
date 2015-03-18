@@ -10,7 +10,7 @@ from tdigest import TDigest
 from numpy.random import random
 
 T1 = TDigest()
-for _ in range(1000):
+for _ in range(5000):
     data = (random(), 1)
     T1.update(data)
 
@@ -18,12 +18,11 @@ print T1.percentile(0.15) # about 0.15
 
 
 T2 = TDigest()
-for _ in range(1000):
-    data = (random(), 1)
-    T2.update(data)
+T2.batch_update(random(5000))
+print T2.percentile(0.15)
 
 T = T1 + T2
-T.percentile(0.5) # about 0.5
+T.percentile(0.3) # about 0.3
 ```
 
 

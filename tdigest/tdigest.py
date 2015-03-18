@@ -169,12 +169,12 @@ if __name__ == '__main__':
     import numpy as np
 
     T1 = TDigest()
-    x = random.random(size=5000)
+    x = random.random(size=100000)
     T1.batch_update(x)
 
     print len(T1)
-    print T1.percentile(0.5)
-    print np.percentile(x, 50)
+    print T1.percentile(0.2)
+    print np.percentile(x, 20)
     T1.compress()
     print len(T1)
-    print T1.percentile(0.5)
+    print T1.percentile(0.2)

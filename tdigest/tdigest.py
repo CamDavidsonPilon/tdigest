@@ -1,4 +1,4 @@
-from random import shuffle, random, choice
+from random import shuffle, choice
 import bisect
 from operator import itemgetter
 from bintrees import FastBinaryTree as BinaryTree
@@ -163,6 +163,8 @@ class TDigest(object):
             t += self.C[key].count
         return 1
 
+    def trimmed_mean(self, q0, q1):
+        raise NotImplementedError
 
 if __name__ == '__main__':
     from numpy import random
@@ -175,6 +177,6 @@ if __name__ == '__main__':
     print len(T1)
     print T1.percentile(0.2)
     print np.percentile(x, 20)
-    T1.compress()
-    print len(T1)
-    print T1.percentile(0.2)
+
+    print T1.percentile(0.5)
+    print np.percentile(x, 50)

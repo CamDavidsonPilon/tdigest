@@ -3,6 +3,9 @@
 
 This is a Python implementation of Ted Dunning's [t-digest](https://github.com/tdunning/t-digest) data structure. The t-digest data structure is designed around computing accurate estimates from either streaming data, or distributed data. These estimates are percentiles, quantiles, trimmed means, etc. Two t-digests can be added, making the data structure ideal for map-reduce settings, and can be serialized into much less than 10kB (instead of storing the entire list of data).
 
+See a blog post about it here: [Percentile and Quantile Estimation of Big Data: The t-Digest](http://dataorigami.net/blogs/napkin-folding/19055451-percentile-and-quantile-estimation-of-big-data-the-t-digest)
+
+
 ### Usage
 
 ```
@@ -24,5 +27,6 @@ print T2.percentile(0.15)
 T = T1 + T2
 T.percentile(0.3) # about 0.3
 ```
+
 
 

@@ -59,6 +59,10 @@ class TDigest(object):
         return (centroid.count / 2. + cumulative_sum) / denom
 
     def batch_update(self, values):
+        """
+        Update the t-digest with an iterable of values. This API assumes all weights are equal
+        to 1.
+        """
         w = 1
         for x in values:
             self.update((x, w))
@@ -86,6 +90,10 @@ class TDigest(object):
             return [self.C[ceil_key]]
 
     def update(self, (x, w)):
+        """
+        Update the t-digest with value x and weight w.
+
+        """
         self.n += w
 
         if len(self) == 0:
@@ -131,6 +139,11 @@ class TDigest(object):
         self.C = T.C
 
     def percentile(self, q):
+        """ 
+        Computes the percentile of a specific value in [0,1], ie. computes F^{-1}(q) where F^{-1} denotes
+        the inverse CDF of the distribution. 
+
+        """
         if not (0 <= q <= 1):
             raise ValueError("q must be between 0 and 1, inclusive.")
 
@@ -153,6 +166,11 @@ class TDigest(object):
         return self.C.max_item()[1].mean
 
     def quantile(self, q):
+        """ 
+        Computes the quantile of a specific value, ie. computes F(q) where F denotes
+        the CDF of the distribution. 
+
+        """
         t = 0
         N = float(self.n)
 
@@ -172,7 +190,8 @@ class TDigest(object):
 
     def trimmed_mean(self, q1, q2):
         """
-        A modified algorithm than the one presented in the original t-Digest paper. 
+        Computes the mean of the distribution between the two percentiles q1 and q2.
+        This is a modified algorithm than the one presented in the original t-Digest paper. 
 
         """
         if not (q1 < q2):

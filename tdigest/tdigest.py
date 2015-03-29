@@ -24,7 +24,7 @@ class Centroid(object):
 
 class TDigest(object):
 
-    def __init__(self, delta=0.02, K=50):
+    def __init__(self, delta=0.01, K=100):
         self.C = BinaryTree()
         self.n = 0
         self.delta = delta
@@ -55,13 +55,14 @@ class TDigest(object):
     def _compute_centroid_quantile(self, centroid):
         denom = self.n
         cumulative_sum = sum(
-            c_i.count for c_i in self.C.value_slice(0, centroid.mean))
+            c_i.count for c_i in self.C.value_slice(-float('Inf'), centroid.mean))
         return (centroid.count / 2. + cumulative_sum) / denom
 
     def batch_update(self, values):
         w = 1
         for x in values:
             self.update((x, w))
+        self.compress()
         return
 
     def _get_closest_centroids(self, x):
@@ -112,6 +113,7 @@ class TDigest(object):
 
         if len(self) > self.K / self.delta:
             self.compress()
+            self.K *= 2
 
         return
 
@@ -136,35 +138,70 @@ class TDigest(object):
         q *= self.n
 
         for i, key in enumerate(self.C.keys()):
-            k = self.C[key].count
+            c_i = self.C[key]
+            k = c_i.count
             if q < t + k:
                 if i == 0:
-                    delta = self.C.succ_item(key)[1].mean - self.C[key].mean
+                    delta = self.C.succ_item(key)[1].mean - c_i.mean
                 elif i == len(self) - 1:
-                    delta = self.C[key].mean - self.C.prev_item(key)[1].mean
+                    delta = c_i.mean - self.C.prev_item(key)[1].mean
                 else:
-                    delta = (
-                        self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
-                return self.C[key].mean + ((q - t) / k - 0.5) * delta
+                    delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
+                return c_i.mean + ((q - t) / k - 0.5) * delta
+
             t += k
         return self.C.max_item()[1].mean
 
     def quantile(self, q):
         t = 0
         N = float(self.n)
+
         for i, key in enumerate(self.C.keys()):
+            c_i = self.C[key]
             if i == len(self) - 1:
-                delta = (self.C[key].mean - self.C.prev_item(key)[1].mean) / 2.
+                delta = (c_i.mean - self.C.prev_item(key)[1].mean) / 2.
             else:
-                delta = (self.C.succ_item(key)[1].mean - self.C[key].mean) / 2.
-            z = max(-1, (q - self.C[key].mean) / delta)
+                delta = (self.C.succ_item(key)[1].mean - c_i.mean) / 2.
+            z = max(-1, (q - c_i.mean) / delta)
+
             if z < 1:
-                return t / N + self.C[key].count / N * (z + 1) / 2
-            t += self.C[key].count
+                return t / N + c_i.count / N * (z + 1) / 2
+
+            t += c_i.count
         return 1
 
-    def trimmed_mean(self, q0, q1):
-        raise NotImplementedError
+    def trimmed_mean(self, q1, q2):
+        """
+        A modified algorithm than the one presented in the original t-Digest paper. 
+
+        """
+        if not (q1 < q2):
+            raise ValueError("q must be between 0 and 1, inclusive.")
+
+        s = k = t = 0
+        q1 *= self.n
+        q2 *= self.n
+        for i, key in enumerate(self.C.keys()):
+            c_i = self.C[key]
+            k_i = c_i.count
+            if q1 < t + k_i:
+                if i == 0:
+                    delta = self.C.succ_item(key)[1].mean - c_i.mean
+                elif i == len(self) - 1:
+                    delta = c_i.mean - self.C.prev_item(key)[1].mean
+                else:
+                    delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
+                nu = ((q1 - t) / k_i - 0.5) * delta
+                s += k_i * c_i.mean
+                k += k_i
+
+            if q2 < t + k_i:
+                return s/k
+            t += k_i
+
+        return s/k
+
+
 
 if __name__ == '__main__':
     from numpy import random
@@ -174,9 +211,14 @@ if __name__ == '__main__':
     x = random.random(size=10000)
     T1.batch_update(x)
 
-    print len(T1)
-    print T1.percentile(0.2)
-    print np.percentile(x, 20)
+    print abs(T1.percentile(.5) - 0.5)
+    print abs(T1.percentile(.1) - .1)
+    print abs(T1.percentile(.9) - 0.9)
+    print abs(T1.percentile(.01) - 0.01)
+    print abs(T1.percentile(.001) - 0.001)
+    print T1.trimmed_mean(0.5, 1.)
 
-    print T1.percentile(0.5)
-    print np.percentile(x, 50)
+
+
+
+

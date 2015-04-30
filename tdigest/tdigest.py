@@ -1,7 +1,7 @@
 from random import shuffle, choice
 import bisect
 from operator import itemgetter
-from bintrees import FastBinaryTree as BinaryTree
+from bintrees import FastRBTree as RBTree
 
 
 class Centroid(object):
@@ -25,7 +25,7 @@ class Centroid(object):
 class TDigest(object):
 
     def __init__(self, delta=0.01, K=100):
-        self.C = BinaryTree()
+        self.C = RBTree()
         self.n = 0
         self.delta = delta
         self.K = K

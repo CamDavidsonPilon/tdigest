@@ -14,8 +14,7 @@ from numpy.random import random
 
 T1 = TDigest()
 for _ in range(5000):
-    data = (random(), 1)
-    T1.update(data)
+    T1.update(random())
 
 print T1.percentile(0.15) # about 0.15
 

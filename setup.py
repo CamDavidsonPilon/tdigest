@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='tdigest',
-      version='0.1.0',
+      version='0.1.1',
       description='T-Digest data structure',
       author='Cam Davidson-pilon',
       author_email='cam.davidson.pilon@gmail.com',
@@ -25,6 +25,12 @@ setup(name='tdigest',
         "Topic :: Scientific/Engineering",
         ],
       license="MIT",
-      keywords='percentile, median, data structure, quantitle, distributed, qdigest',
-
-      )
+      keywords='percentile, median, data structure, quantitle, distributed, qdigest, tdigest',
+      package_data={
+        "tdigest": [
+            "../README.md",
+            "../LICENSE.txt",
+            "../MANIFEST",
+        ]
+      },
+)

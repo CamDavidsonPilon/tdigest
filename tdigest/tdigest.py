@@ -1,8 +1,10 @@
+from __future__ import print_function
+
 from random import shuffle, choice
 import bisect
 from operator import itemgetter
 from bintrees import FastRBTree as RBTree
-
+from math import sqrt
 
 class Centroid(object):
 
@@ -16,7 +18,7 @@ class Centroid(object):
         return
 
     def __repr__(self):
-        return """<Centroid: mean=%.4f, count=%d>""" % (self.mean, self.count)
+        return """<Centroid: mean=%.8f, count=%d>""" % (self.mean, self.count)
 
     def __eq__(self, other):
         return self.mean == other.mean and self.count == other.count
@@ -38,7 +40,7 @@ class TDigest(object):
         data = C1 + C2
         new_digest = TDigest(self.delta, self.K)
         for c in data:
-            new_digest.update((c.mean, c.count))
+            new_digest.update(c.mean, c.count)
 
         return new_digest
 
@@ -65,7 +67,7 @@ class TDigest(object):
         """
         w = 1
         for x in values:
-            self.update((x, w))
+            self.update(x, w)
         self.compress()
         return
 
@@ -89,7 +91,10 @@ class TDigest(object):
         else:
             return [self.C[ceil_key]]
 
-    def update(self, (x, w)):
+    def _theshold(self, q):
+        return 4 * self.n * self.delta * q * (1 - q)
+
+    def update(self, x, w=1):
         """
         Update the t-digest with value x and weight w.
 
@@ -107,11 +112,11 @@ class TDigest(object):
             c_j = S[j]
 
             q = self._compute_centroid_quantile(c_j)
-            if c_j.count + w > 4 * self.n * self.delta * q * (1 - q):
+            if c_j.count + w > self._theshold(q):
                 S.pop(j)
                 continue
 
-            delta_w = min(4 * self.n * self.delta * q * (1 - q) - c_j.count, w)
+            delta_w = min(self._theshold(q) - c_j.count, w)
             self._update_centroid(c_j, x, delta_w)
             w -= delta_w
             S.pop(j)
@@ -134,7 +139,7 @@ class TDigest(object):
         C = list(self.C.values())
         shuffle(C)
         for c_i in C:
-            T.update((c_i.mean, c_i.count))
+            T.update(c_i.mean, c_i.count)
         self.C = T.C
 
     def percentile(self, q):
@@ -154,9 +159,9 @@ class TDigest(object):
             k = c_i.count
             if q < t + k:
                 if i == 0:
-                    delta = self.C.succ_item(key)[1].mean - c_i.mean
+                    return c_i.mean
                 elif i == len(self) - 1:
-                    delta = c_i.mean - self.C.prev_item(key)[1].mean
+                    return c_i.mean
                 else:
                     delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
                 return c_i.mean + ((q - t) / k - 0.5) * delta
@@ -229,12 +234,12 @@ if __name__ == '__main__':
     x = random.random(size=10000)
     T1.batch_update(x)
 
-    print abs(T1.percentile(.5) - 0.5)
-    print abs(T1.percentile(.1) - .1)
-    print abs(T1.percentile(.9) - 0.9)
-    print abs(T1.percentile(.01) - 0.01)
-    print abs(T1.percentile(.001) - 0.001)
-    print T1.trimmed_mean(0.5, 1.)
+    print(abs(T1.percentile(.5) - 0.5))
+    print(abs(T1.percentile(.1) - .1))
+    print(abs(T1.percentile(.9) - 0.9))
+    print(abs(T1.percentile(.01) - 0.01))
+    print(abs(T1.percentile(.001) - 0.001))
+    print(T1.trimmed_mean(0.5, 1.))
 
 
 

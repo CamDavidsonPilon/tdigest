@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='tdigest',
-      version='0.0.2',
+      version='0.1.0',
       description='T-Digest data structure',
       author='Cam Davidson-pilon',
       author_email='cam.davidson.pilon@gmail.com',
@@ -18,4 +18,13 @@ setup(name='tdigest',
       install_requires=[
           "bintrees",
       ],
+      classifiers=[
+        "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Topic :: Scientific/Engineering",
+        ],
+      license="MIT",
+      keywords='percentile, median, data structure, quantitle, distributed, qdigest',
+
       )

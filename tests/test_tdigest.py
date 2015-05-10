@@ -99,13 +99,20 @@ class TestTDigest():
     def test_data_comes_in_sorted_does_not_blow_up(self, empty_tdigest):
         t = TDigest()
         for x in range(10000):
-            t.update((x,1))
+            t.update(x,1)
 
         assert len(t) < 5000
 
         t = TDigest()
         t.batch_update(range(10000))
         assert len(t) < 1000
+
+    def test_extreme_percentiles_return_min_and_max(self, empty_tdigest):
+        t = TDigest()
+        data = random.randn(100000)
+        t.batch_update(data)
+        assert t.percentile(0) == data.min()
+        assert t.percentile(1.) == data.max()
 
 class TestStatisticalTests():
 

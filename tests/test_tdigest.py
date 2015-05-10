@@ -96,6 +96,17 @@ class TestTDigest():
         assert postcompress_n == precompress_n
         assert postcompress_len <= precompress_len
 
+    def test_data_comes_in_sorted_does_not_blow_up(self, empty_tdigest):
+        t = TDigest()
+        for x in range(10000):
+            t.update((x,1))
+
+        assert len(t) < 5000
+
+        t = TDigest()
+        t.batch_update(range(10000))
+        assert len(t) < 1000
+
 class TestStatisticalTests():
 
     def test_uniform(self):

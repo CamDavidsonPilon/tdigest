@@ -24,7 +24,7 @@ class Centroid(object):
 
 class TDigest(object):
 
-    def __init__(self, delta=0.01, K=100):
+    def __init__(self, delta=0.01, K=25):
         self.C = RBTree()
         self.n = 0
         self.delta = delta
@@ -121,7 +121,6 @@ class TDigest(object):
 
         if len(self) > self.K / self.delta:
             self.compress()
-            self.K *= 2
 
         return
 

@@ -1,6 +1,5 @@
 from bintrees import BinaryTree
 import pytest
-import numpy as np
 from numpy import random
 
 from tdigest.tdigest import TDigest, Centroid

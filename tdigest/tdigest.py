@@ -1,10 +1,7 @@
 from __future__ import print_function
 
 from random import shuffle, choice
-import bisect
-from operator import itemgetter
 from bintrees import FastRBTree as RBTree
-from math import sqrt
 
 class Centroid(object):
 
@@ -12,16 +9,16 @@ class Centroid(object):
         self.mean = float(mean)
         self.count = float(count)
 
-    def update(self, x, delta_weight):
-        self.count += delta_weight
-        self.mean += delta_weight * (x - self.mean) / self.count
-        return
-
     def __repr__(self):
         return """<Centroid: mean=%.8f, count=%d>""" % (self.mean, self.count)
 
     def __eq__(self, other):
         return self.mean == other.mean and self.count == other.count
+
+    def update(self, x, delta_weight):
+        self.count += delta_weight
+        self.mean += delta_weight * (x - self.mean) / self.count
+        return
 
 
 class TDigest(object):
@@ -60,16 +57,10 @@ class TDigest(object):
             c_i.count for c_i in self.C.value_slice(-float('Inf'), centroid.mean))
         return (centroid.count / 2. + cumulative_sum) / denom
 
-    def batch_update(self, values):
-        """
-        Update the t-digest with an iterable of values. This API assumes all weights are equal
-        to 1.
-        """
-        w = 1
-        for x in values:
-            self.update(x, w)
-        self.compress()
-        return
+    def _update_centroid(self, centroid, x, w):
+        self.C.pop(centroid.mean)
+        centroid.update(x, w)
+        self._add_centroid(centroid)
 
     def _get_closest_centroids(self, x):
         try:
@@ -129,10 +120,16 @@ class TDigest(object):
 
         return
 
-    def _update_centroid(self, centroid, x, w):
-        self.C.pop(centroid.mean)
-        centroid.update(x, w)
-        self._add_centroid(centroid)
+    def batch_update(self, values):
+        """
+        Update the t-digest with an iterable of values. This API assumes all weights are equal
+        to 1.
+        """
+        w = 1
+        for x in values:
+            self.update(x, w)
+        self.compress()
+        return
 
     def compress(self):
         T = TDigest(self.delta, self.K)
@@ -215,8 +212,8 @@ class TDigest(object):
                 else:
                     delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
                 nu = ((q1 - t) / k_i - 0.5) * delta
-                s += k_i * c_i.mean
-                k += k_i
+                s += nu * k_i * c_i.mean
+                k += nu * k_i
 
             if q2 < t + k_i:
                 return s/k

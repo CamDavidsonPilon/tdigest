@@ -15,9 +15,9 @@ class Centroid(object):
     def __eq__(self, other):
         return self.mean == other.mean and self.count == other.count
 
-    def update(self, x, delta_weight):
-        self.count += delta_weight
-        self.mean += delta_weight * (x - self.mean) / self.count
+    def update(self, x, weight):
+        self.count += weight
+        self.mean += weight * (x - self.mean) / self.count
         return
 
 
@@ -48,8 +48,10 @@ class TDigest(object):
         return """<T-Digest: n=%d, centroids=%d>""" % (self.n, len(self))
 
     def _add_centroid(self, centroid):
-        self.C.insert(centroid.mean, centroid)
-        return
+        if centroid.mean not in self.C:
+            self.C.insert(centroid.mean, centroid)
+        else:
+            self.C[centroid.mean].update(centroid.mean, centroid.count)
 
     def _compute_centroid_quantile(self, centroid):
         denom = self.n
@@ -62,7 +64,7 @@ class TDigest(object):
         centroid.update(x, w)
         self._add_centroid(centroid)
 
-    def _get_closest_centroids(self, x):
+    def _find_closest_centroids(self, x):
         try:
             ceil_key = self.C.ceiling_key(x)
         except KeyError:
@@ -96,13 +98,16 @@ class TDigest(object):
             self._add_centroid(Centroid(x, w))
             return
 
-        S = self._get_closest_centroids(x)
+        S = self._find_closest_centroids(x)
 
         while len(S) != 0 and w > 0:
             j = choice(range(len(S)))
             c_j = S[j]
 
             q = self._compute_centroid_quantile(c_j)
+
+            # This filters the out centroids that do not satisfy the second part
+            # of the definition of S. See original paper by Dunning. 
             if c_j.count + w > self._theshold(q):
                 S.pop(j)
                 continue
@@ -120,12 +125,11 @@ class TDigest(object):
 
         return
 
-    def batch_update(self, values):
+    def batch_update(self, values, w=1):
         """
-        Update the t-digest with an iterable of values. This API assumes all weights are equal
-        to 1.
+        Update the t-digest with an iterable of values. This assumes all points have the 
+        same weight.
         """
-        w = 1
         for x in values:
             self.update(x, w)
         self.compress()

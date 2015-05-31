@@ -1,4 +1,4 @@
-from bintrees import BinaryTree
+from bintrees import FastRBTree as RBTree
 import pytest
 from numpy import random
 
@@ -12,7 +12,7 @@ def empty_tdigest():
 
 @pytest.fixture()
 def example_positive_centroids():
-    return BinaryTree([
+    return RBTree([
         (0.5, Centroid(0.5, 1)),
         (1.1, Centroid(1.1, 1)),
         (1.5, Centroid(1.5, 1)),
@@ -21,7 +21,7 @@ def example_positive_centroids():
 
 @pytest.fixture()
 def example_centroids():
-    return BinaryTree([
+    return RBTree([
         (-1.1, Centroid(-1.1, 1)),
         (-0.5, Centroid(-0.5, 1)),
         (0.1, Centroid(0.1, 1)),
@@ -40,7 +40,7 @@ class TestTDigest():
         empty_tdigest.C = example_positive_centroids
         new_centroid = Centroid(0.9, 1)
         empty_tdigest._add_centroid(new_centroid)
-        assert (empty_tdigest.C - BinaryTree([
+        assert (empty_tdigest.C - RBTree([
             (0.5, Centroid(0.5, 1)),
             (new_centroid.mean, new_centroid),
             (1.1, Centroid(1.1, 1)),
@@ -49,12 +49,22 @@ class TestTDigest():
 
         last_centroid = Centroid(10., 1)
         empty_tdigest._add_centroid(last_centroid)
-        assert (empty_tdigest.C - BinaryTree([
+        assert (empty_tdigest.C - RBTree([
             (0.5, Centroid(0.5, 1)),
             (new_centroid.mean, new_centroid),
             (1.1, Centroid(1.1, 1)),
             (1.5, Centroid(1.5, 1)),
             (last_centroid.mean, last_centroid),
+        ])).is_empty()
+
+    def test_add_centroid_if_key_already_present(self, empty_tdigest, example_positive_centroids):
+        empty_tdigest.C = example_positive_centroids
+        new_centroid = Centroid(1.1, 5)
+        empty_tdigest._add_centroid(new_centroid)
+        assert (empty_tdigest.C - RBTree([
+            (0.5, Centroid(0.5, 1)),
+            (1.1, Centroid(1.1, 1 + 5)),
+            (1.5, Centroid(1.5, 1)),
         ])).is_empty()
 
     def test_compute_centroid_quantile(self, empty_tdigest, example_centroids):
@@ -68,23 +78,23 @@ class TestTDigest():
 
 
 
-    def test_get_closest_centroids_works_with_positive_values(self, empty_tdigest, example_positive_centroids):
+    def test_find_closest_centroids_works_with_positive_values(self, empty_tdigest, example_positive_centroids):
         empty_tdigest.C = example_positive_centroids
-        assert empty_tdigest._get_closest_centroids(0.0) == [example_positive_centroids[0.5]]
-        assert empty_tdigest._get_closest_centroids(2.0) == [example_positive_centroids[1.5]]
-        assert empty_tdigest._get_closest_centroids(1.1) == [example_positive_centroids[1.1]]
-        assert empty_tdigest._get_closest_centroids(1.2) == [example_positive_centroids[1.1]]
-        assert empty_tdigest._get_closest_centroids(1.4) == [example_positive_centroids[1.5]]
-        assert empty_tdigest._get_closest_centroids(1.3) == [example_positive_centroids[1.5], 
+        assert empty_tdigest._find_closest_centroids(0.0) == [example_positive_centroids[0.5]]
+        assert empty_tdigest._find_closest_centroids(2.0) == [example_positive_centroids[1.5]]
+        assert empty_tdigest._find_closest_centroids(1.1) == [example_positive_centroids[1.1]]
+        assert empty_tdigest._find_closest_centroids(1.2) == [example_positive_centroids[1.1]]
+        assert empty_tdigest._find_closest_centroids(1.4) == [example_positive_centroids[1.5]]
+        assert empty_tdigest._find_closest_centroids(1.3) == [example_positive_centroids[1.5], 
                                                              example_positive_centroids[1.1]]
 
 
     def test_get_closest_centroids_works_with_negative_values(self, empty_tdigest, example_centroids):
         empty_tdigest.C = example_centroids
-        assert empty_tdigest._get_closest_centroids(0.0) == [example_centroids[0.1]]
-        assert empty_tdigest._get_closest_centroids(-2.0) == [example_centroids[-1.1]]
-        assert empty_tdigest._get_closest_centroids(-0.6) == [example_centroids[-0.5]]
-        assert empty_tdigest._get_closest_centroids(-0.4) == [example_centroids[-0.5]]
+        assert empty_tdigest._find_closest_centroids(0.0) == [example_centroids[0.1]]
+        assert empty_tdigest._find_closest_centroids(-2.0) == [example_centroids[-1.1]]
+        assert empty_tdigest._find_closest_centroids(-0.6) == [example_centroids[-0.5]]
+        assert empty_tdigest._find_closest_centroids(-0.4) == [example_centroids[-0.5]]
  
 
     def test_compress(self, empty_tdigest, example_random_data):
@@ -116,18 +126,28 @@ class TestTDigest():
 class TestStatisticalTests():
 
     def test_uniform(self):
-        T1 = TDigest()
+        t = TDigest()
         x = random.random(size=10000)
-        T1.batch_update(x)
+        t.batch_update(x)
 
-        assert abs(T1.percentile(.5) - 0.5) < 0.02
-        assert abs(T1.percentile(.1) - .1) < 0.01
-        assert abs(T1.percentile(.9) - 0.9) < 0.01
-        assert abs(T1.percentile(.01) - 0.01) < 0.005
-        assert abs(T1.percentile(.99) - 0.99) < 0.005
-        assert abs(T1.percentile(.001) - 0.001) < 0.001
-        assert abs(T1.percentile(.999) - 0.999) < 0.001
+        assert abs(t.percentile(.5) - 0.5) < 0.02
+        assert abs(t.percentile(.1) - .1) < 0.01
+        assert abs(t.percentile(.9) - 0.9) < 0.01
+        assert abs(t.percentile(.01) - 0.01) < 0.005
+        assert abs(t.percentile(.99) - 0.99) < 0.005
+        assert abs(t.percentile(.001) - 0.001) < 0.001
+        assert abs(t.percentile(.999) - 0.999) < 0.001
         
+    def test_ints(self):
+        t = TDigest()
+        t.batch_update([1,2,3])
+        assert t.percentile(0.5) == 2
+
+        t = TDigest()
+        x = [1,2,2,2,2,2,2,2,3]
+        t.batch_update(x)
+        assert t.percentile(0.5) == 2
+        assert sum([c.count for c in t.C.values()]) == len(x)
 
 class TestCentroid():
 

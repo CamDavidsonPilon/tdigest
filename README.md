@@ -39,7 +39,7 @@ print another_digest.percentile(0.15)
 #### Sum two digests to create a new digest
 
 ```
-sum_digest = another_digest + another_digest 
+sum_digest = digest + another_digest 
 sum_digest.percentile(0.3) # about 0.3
 ```
 

@@ -2,7 +2,7 @@ from random import random
 from operator import add 
 from tdigest import TDigest
 
-data = sc.parallelize([_ for _ in random()])
+data = sc.parallelize([random() for _ in range(1000)], 10)
 
 def digest_partitions(values):
     digest = TDigest()

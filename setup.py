@@ -25,7 +25,7 @@ setup(name='tdigest',
         "Topic :: Scientific/Engineering",
         ],
       license="MIT",
-      keywords='percentile, median, data structure, quantitle, distributed, qdigest, tdigest',
+      keywords='percentile, median, probabilistic data structure, quantitle, distributed, qdigest, tdigest, streaming, pyspark',
       package_data={
         "tdigest": [
             "../README.md",

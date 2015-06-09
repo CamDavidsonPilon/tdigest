@@ -1,6 +1,7 @@
 # tdigest
 ### Efficient percentile estimation of streaming or distributed data
 [![Latest Version](https://pypip.in/v/tdigest/badge.png)](https://pypi.python.org/pypi/tdigest/)
+[![Build Status](https://travis-ci.org/CamDavidsonPilon/tdigest.svg?branch=master)](https://travis-ci.org/CamDavidsonPilon/tdigest)
 
 
 This is a Python implementation of Ted Dunning's [t-digest](https://github.com/tdunning/t-digest) data structure. The t-digest data structure is designed around computing accurate estimates from either streaming data, or distributed data. These estimates are percentiles, quantiles, trimmed means, etc. Two t-digests can be added, making the data structure ideal for map-reduce settings, and can be serialized into much less than 10kB (instead of storing the entire list of data).
@@ -9,6 +10,8 @@ See a blog post about it here: [Percentile and Quantile Estimation of Big Data: 
 
 
 ### Installation
+*tdigest* is compatible with both Python 2 and Python 3. 
+
 ```
 pip install tdigest
 ```

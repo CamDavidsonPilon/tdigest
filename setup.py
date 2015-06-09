@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='tdigest',
-      version='0.1.2',
+      version='0.2.0',
       description='T-Digest data structure',
       author='Cam Davidson-pilon',
       author_email='cam.davidson.pilon@gmail.com',
@@ -23,6 +23,8 @@ setup(name='tdigest',
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Topic :: Scientific/Engineering",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
         ],
       license="MIT",
       keywords='percentile, median, probabilistic data structure, quantitle, distributed, qdigest, tdigest, streaming, pyspark',

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from random import random
 from operator import add 
 from tdigest import TDigest
@@ -10,5 +12,5 @@ def digest_partitions(values):
     return [digest]
 
 digest = data.mapPartitions(digest_partitions).reduce(add)  # to be more efficent, use treeReduce
-print digest.percentile(0.95)
+print(digest.percentile(0.95))
 

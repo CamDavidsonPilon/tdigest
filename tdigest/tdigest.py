@@ -101,7 +101,7 @@ class TDigest(object):
         S = self._find_closest_centroids(x)
 
         while len(S) != 0 and w > 0:
-            j = choice(range(len(S)))
+            j = choice(list(range(len(S))))
             c_j = S[j]
 
             q = self._compute_centroid_quantile(c_j)

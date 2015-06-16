@@ -123,6 +123,14 @@ class TestTDigest():
         assert t.percentile(0) == data.min()
         assert t.percentile(1.) == data.max()
 
+    def test_adding_centroid_with_exisiting_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):
+        td = empty_tdigest
+        td.C = example_centroids
+        assert -1.1 in td.C
+        td._add_centroid(Centroid(-1.1, 10))
+        assert all([k == centroid.mean for k, centroid in td.C.items()])
+
+
 class TestStatisticalTests():
 
     def test_uniform(self):

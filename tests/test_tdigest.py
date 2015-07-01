@@ -121,7 +121,7 @@ class TestTDigest():
         data = random.randn(100000)
         t.batch_update(data)
         assert t.percentile(0) == data.min()
-        assert t.percentile(1.) == data.max()
+        assert t.percentile(100.) == data.max()
 
     def test_adding_centroid_with_exisiting_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):
         td = empty_tdigest
@@ -138,23 +138,23 @@ class TestStatisticalTests():
         x = random.random(size=10000)
         t.batch_update(x)
 
-        assert abs(t.percentile(.5) - 0.5) < 0.02
-        assert abs(t.percentile(.1) - .1) < 0.01
-        assert abs(t.percentile(.9) - 0.9) < 0.01
-        assert abs(t.percentile(.01) - 0.01) < 0.005
-        assert abs(t.percentile(.99) - 0.99) < 0.005
-        assert abs(t.percentile(.001) - 0.001) < 0.001
-        assert abs(t.percentile(.999) - 0.999) < 0.001
+        assert abs(t.percentile(50) - 0.5) < 0.02
+        assert abs(t.percentile(10) - .1) < 0.01
+        assert abs(t.percentile(90) - 0.9) < 0.01
+        assert abs(t.percentile(1) - 0.01) < 0.005
+        assert abs(t.percentile(99) - 0.99) < 0.005
+        assert abs(t.percentile(0.1) - 0.001) < 0.001
+        assert abs(t.percentile(99.9) - 0.999) < 0.001
         
     def test_ints(self):
         t = TDigest()
         t.batch_update([1,2,3])
-        assert t.percentile(0.5) == 2
+        assert t.percentile(50) == 2
 
         t = TDigest()
         x = [1,2,2,2,2,2,2,2,3]
         t.batch_update(x)
-        assert t.percentile(0.5) == 2
+        assert t.percentile(50) == 2
         assert sum([c.count for c in t.C.values()]) == len(x)
 
 class TestCentroid():

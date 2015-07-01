@@ -28,7 +28,7 @@ digest = TDigest()
 for x in range(5000):
     digest.update(random())
 
-print digest.percentile(0.15) # about 0.15, as 0.15 is the 15th percentile of the Uniform(0,1) distribution
+print digest.percentile(15) # about 0.15, as 0.15 is the 15th percentile of the Uniform(0,1) distribution
 ```
 
 #### Update the digest in batches
@@ -36,14 +36,14 @@ print digest.percentile(0.15) # about 0.15, as 0.15 is the 15th percentile of th
 ```
 another_digest = TDigest()
 another_digest.batch_update(random(5000))
-print another_digest.percentile(0.15)
+print another_digest.percentile(15)
 ```
 
 #### Sum two digests to create a new digest
 
 ```
 sum_digest = digest + another_digest 
-sum_digest.percentile(0.3) # about 0.3
+sum_digest.percentile(30) # about 0.3
 ```
 
 ### API 
@@ -53,9 +53,9 @@ sum_digest.percentile(0.3) # about 0.3
  - `update(x, w=1)`: update the tdigest with value `x` and weight `w`.
  - `batch_update(x, w=1)`: update the tdigest with values in array `x` and weight `w`.
  - `compress()`: perform a compression on the underlying data structure that will shrink the memory footprint of it, without hurting accuracy. Good to perform after adding many values. 
- - `percentile(q)`: return the `q`th percentile. Example: `q=.50` is the median.
- - `quantile(q)`: return the percentile the value `q` is at. 
- - `trimmed_mean(q1, q2)`: return the mean of data set without the values below and above the `q1` and `q2` percentile respectively. 
+ - `percentile(p)`: return the `p`th percentile. Example: `p=50` is the median.
+ - `quantile(q)`: return the CDF the value `q` is at. 
+ - `trimmed_mean(p1, p2)`: return the mean of data set without the values below and above the `p1` and `p2` percentile respectively. 
 
  
 

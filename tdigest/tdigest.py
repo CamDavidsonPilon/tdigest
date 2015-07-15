@@ -2,6 +2,8 @@ from __future__ import print_function
 
 from random import shuffle, choice
 from bintrees import FastRBTree as RBTree
+import pyudorandom
+from itertools import chain
 
 class Centroid(object):
 
@@ -30,13 +32,9 @@ class TDigest(object):
         self.K = K
 
     def __add__(self, other_digest):
-        C1 = list(self.C.values())
-        C2 = list(other_digest.C.values())
-        shuffle(C1)
-        shuffle(C2)
-        data = C1 + C2
+        data = list(chain(self.C.values(), other_digest.C.values()))
         new_digest = TDigest(self.delta, self.K)
-        for c in data:
+        for c in pyudorandom.items(data):
             new_digest.update(c.mean, c.count)
 
         return new_digest

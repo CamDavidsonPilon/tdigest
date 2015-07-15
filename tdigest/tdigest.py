@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from random import shuffle, choice
+from random import choice
 from bintrees import FastRBTree as RBTree
 import pyudorandom
 from itertools import chain
@@ -136,8 +136,7 @@ class TDigest(object):
     def compress(self):
         T = TDigest(self.delta, self.K)
         C = list(self.C.values())
-        shuffle(C)
-        for c_i in C:
+        for c_i in pyudorandom.items(C):
             T.update(c_i.mean, c_i.count)
         self.C = T.C
 

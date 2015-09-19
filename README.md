@@ -28,7 +28,7 @@ digest = TDigest()
 for x in range(5000):
     digest.update(random())
 
-print digest.percentile(15) # about 0.15, as 0.15 is the 15th percentile of the Uniform(0,1) distribution
+print(digest.percentile(15))  # about 0.15, as 0.15 is the 15th percentile of the Uniform(0,1) distribution
 ```
 
 #### Update the digest in batches
@@ -36,14 +36,14 @@ print digest.percentile(15) # about 0.15, as 0.15 is the 15th percentile of the 
 ```
 another_digest = TDigest()
 another_digest.batch_update(random(5000))
-print another_digest.percentile(15)
+print(another_digest.percentile(15))
 ```
 
 #### Sum two digests to create a new digest
 
 ```
 sum_digest = digest + another_digest 
-sum_digest.percentile(30) # about 0.3
+sum_digest.percentile(30)  # about 0.3
 ```
 
 ### API 

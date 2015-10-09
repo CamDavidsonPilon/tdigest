@@ -34,8 +34,10 @@ class TDigest(object):
     def __add__(self, other_digest):
         data = list(chain(self.C.values(), other_digest.C.values()))
         new_digest = TDigest(self.delta, self.K)
-        for c in pyudorandom.items(data):
-            new_digest.update(c.mean, c.count)
+        
+        if len(data) > 0:
+            for c in pyudorandom.items(data):
+                new_digest.update(c.mean, c.count)
 
         return new_digest
 

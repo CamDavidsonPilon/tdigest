@@ -12,5 +12,5 @@ def digest_partitions(values):
     return [digest]
 
 digest = data.mapPartitions(digest_partitions).reduce(add)  # to be more efficent, use treeReduce
-print(digest.percentile(0.95))
+print(digest.percentile(95))
 

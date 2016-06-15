@@ -133,12 +133,12 @@ class TestTDigest():
     def test_quantile_with_single_centroid(self, empty_tdigest):
         td = empty_tdigest
         td.update(1)
-        assert td.quantile(1) == 0.5
+        assert td.quantile(1) == 1
 
     def test_quantile_with_single_centroid_at_zero(self, empty_tdigest):
         td = empty_tdigest
         td.update(0)
-        assert td.quantile(0) == 0.5
+        assert td.quantile(0) == 1
 
 
 

@@ -130,6 +130,17 @@ class TestTDigest():
         td._add_centroid(Centroid(-1.1, 10))
         assert all([k == centroid.mean for k, centroid in td.C.items()])
 
+    def test_quantile_with_single_centroid(self, empty_tdigest):
+        td = empty_tdigest
+        td.update(1)
+        assert td.quantile(1) == 0.5
+
+    def test_quantile_with_single_centroid_at_zero(self, empty_tdigest):
+        td = empty_tdigest
+        td.update(0)
+        assert td.quantile(0) == 0.5
+
+
 
 class TestStatisticalTests():
 

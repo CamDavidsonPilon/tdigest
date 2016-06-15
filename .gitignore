@@ -1,0 +1,4 @@
+*.pyc
+/env
+/.cache
+/*.egg-info

@@ -36,4 +36,5 @@ setup(name='tdigest',
             "../MANIFEST",
         ]
       },
+      extras_require = { 'tests': [ 'pytest', 'pytest-timeout', 'pytest-cov', 'numpy' ] },
 )

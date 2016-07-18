@@ -138,8 +138,9 @@ class TDigest(object):
     def compress(self):
         T = TDigest(self.delta, self.K)
         C = list(self.C.values())
-        for c_i in pyudorandom.items(C):
-            T.update(c_i.mean, c_i.count)
+        if len(C) > 0:
+            for c_i in pyudorandom.items(C):
+                T.update(c_i.mean, c_i.count)
         self.C = T.C
 
     def percentile(self, p):

@@ -130,10 +130,6 @@ class TestTDigest():
         td._add_centroid(Centroid(-1.1, 10))
         assert all([k == centroid.mean for k, centroid in td.C.items()])
 
-    def test_empty_tdigest_compress(self, empty_tdigest):
-        td = empty_tdigest
-        td.compress()
-
 
 class TestStatisticalTests():
 

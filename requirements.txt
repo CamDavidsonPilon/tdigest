@@ -1,2 +1,2 @@
 bintrees
-pyudorandom
+pyudorandom>=1.0.0

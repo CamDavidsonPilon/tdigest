@@ -123,6 +123,12 @@ class TestTDigest():
         assert t.percentile(0) == data.min()
         assert t.percentile(100.) == data.max()
 
+    def test_negative_extreme_percentile_is_still_positive(self, empty_tdigest):
+        # Test https://github.com/CamDavidsonPilon/tdigest/issues/16
+        t = TDigest()
+        t.batch_update([62.0, 202.0, 1415.0, 1433.0])
+        assert t.percentile(0.25) > 0
+
     def test_adding_centroid_with_exisiting_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):
         td = empty_tdigest
         td.C = example_centroids

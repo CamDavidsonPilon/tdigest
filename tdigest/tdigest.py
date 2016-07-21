@@ -178,6 +178,9 @@ class TDigest(object):
         t = 0
         N = float(self.n)
 
+        if len(self) == 1: # only one centroid
+            return int(q >= self.C.min_key())
+
         for i, key in enumerate(self.C.keys()):
             c_i = self.C[key]
             if i == len(self) - 1:

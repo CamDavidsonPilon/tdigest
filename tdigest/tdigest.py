@@ -213,21 +213,34 @@ class TDigest(object):
             c_i = self.C[key]
             k_i = c_i.count
             if p1 < t + k_i:
-                if i == 0:
-                    delta = self.C.succ_item(key)[1].mean - c_i.mean
-                elif i == len(self) - 1:
-                    delta = c_i.mean - self.C.prev_item(key)[1].mean
+                if t < p1:
+                    nu = self.__interpolate(i,key,p1-t)
                 else:
-                    delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
-                nu = ((p1 - t) / k_i - 0.5) * delta
+                    nu = 1
                 s += nu * k_i * c_i.mean
                 k += nu * k_i
 
             if p2 < t + k_i:
-                return s/k
+                nu = self.__interpolate(i,key,p2-t)
+                s -= nu * k_i * c_i.mean
+                k -= nu * k_i
+                break
+
             t += k_i
 
         return s/k
+
+    def __interpolate(self, i, key, diff):
+        c_i = self.C[key]
+        k_i = c_i.count
+
+        if i == 0:
+            delta = self.C.succ_item(key)[1].mean - c_i.mean
+        elif i == len(self) - 1:
+            delta = c_i.mean - self.C.prev_item(key)[1].mean
+        else:
+            delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
+        return (diff / k_i - 0.5) * delta
 
 
 

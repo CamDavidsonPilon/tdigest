@@ -1,7 +1,9 @@
 from bintrees import FastRBTree as RBTree
 import pytest
 from numpy import random
-
+from numpy import percentile
+from numpy import bitwise_and
+from numpy import testing
 from tdigest.tdigest import TDigest, Centroid
 
 
@@ -85,7 +87,7 @@ class TestTDigest():
         assert empty_tdigest._find_closest_centroids(1.1) == [example_positive_centroids[1.1]]
         assert empty_tdigest._find_closest_centroids(1.2) == [example_positive_centroids[1.1]]
         assert empty_tdigest._find_closest_centroids(1.4) == [example_positive_centroids[1.5]]
-        assert empty_tdigest._find_closest_centroids(1.3) == [example_positive_centroids[1.5], 
+        assert empty_tdigest._find_closest_centroids(1.3) == [example_positive_centroids[1.5],
                                                              example_positive_centroids[1.1]]
 
 
@@ -95,7 +97,7 @@ class TestTDigest():
         assert empty_tdigest._find_closest_centroids(-2.0) == [example_centroids[-1.1]]
         assert empty_tdigest._find_closest_centroids(-0.6) == [example_centroids[-0.5]]
         assert empty_tdigest._find_closest_centroids(-0.4) == [example_centroids[-0.5]]
- 
+
 
     def test_compress(self, empty_tdigest, example_random_data):
         empty_tdigest.batch_update(example_random_data)
@@ -162,7 +164,7 @@ class TestStatisticalTests():
         assert abs(t.percentile(99) - 0.99) < 0.005
         assert abs(t.percentile(0.1) - 0.001) < 0.001
         assert abs(t.percentile(99.9) - 0.999) < 0.001
-        
+
     def test_ints(self):
         t = TDigest()
         t.batch_update([1,2,3])
@@ -173,6 +175,21 @@ class TestStatisticalTests():
         t.batch_update(x)
         assert t.percentile(50) == 2
         assert sum([c.count for c in t.C.values()]) == len(x)
+
+    @pytest.mark.parametrize("percentile_range", [[0, 7], [27, 47], [39, 66], [81, 99], [77, 100], [0,100]])
+    @pytest.mark.parametrize("data_size", [100, 1000, 5000])
+    def test_trimmed_mean(self, percentile_range, data_size):
+        p1 = percentile_range[0]
+        p2 = percentile_range[1]
+
+        t = TDigest()
+        x = random.random(size=data_size)
+        t.batch_update(x)
+
+        tm_actual = t.trimmed_mean(p1, p2)
+        tm_expected = x[bitwise_and(x >= percentile(x, p1), x <= percentile(x, p2))].mean()
+
+        testing.assert_allclose(tm_actual, tm_expected, rtol= 0.01, atol= 0.01)
 
 class TestCentroid():
 

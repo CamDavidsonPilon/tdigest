@@ -1,5 +1,12 @@
 ## Changelog
 
+### 0.4.1.0
+ - fixed a bug in `trimmed_mean` that was giving incorrect results. Proper interpolation and tests correct this. 
+
+### 0.4.0.2
+ - new dependency updates.
+ - fix quantile with only one centroid.
+
 ### 0.3.0
  - The definition of percentile was used incorrectly in tdigest. Previous to 0.3.0, 
   a percentile was defined between 0 and 1. In fact, a percentile is defined between 0 and 100 (hence the 'percent' in percentile). This follows other conventions, like in Numpy and Scipy. This affects the `TDigest.percentile` function. 

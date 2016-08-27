@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='tdigest',
-      version='0.4.0.2',
+      version='0.4.1.0',
       description='T-Digest data structure',
       author='Cam Davidson-pilon',
       author_email='cam.davidson.pilon@gmail.com',

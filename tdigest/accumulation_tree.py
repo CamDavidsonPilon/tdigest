@@ -33,8 +33,10 @@ class AccumulationTree(RBTree):
         return node
 
     def insert(self, key, value):
-        RBTree.insert(self, key, value)
-        self._update_dirty_nodes()
+        try:
+            RBTree.insert(self, key, value)
+        finally:
+            self._update_dirty_nodes()
 
     def remove(self, key):
         try:
@@ -77,13 +79,13 @@ class AccumulationTree(RBTree):
             return self._get_left_accumulation(node[0], upper)
 
     def _get_accumulation(self, node, lower, upper):
-        if not node or lower > upper:
+        if not node or lower >= upper:
             return self._zero
-        if node < lower:
-            return self._get_accumulation(node[1])
-        if node >= upper:
-            return self._get_accumulation(node[0])
-        return self.reducer(
+        if node.key < lower:
+            return self._get_accumulation(node[1], lower, upper)
+        if node.key >= upper:
+            return self._get_accumulation(node[0], lower, upper)
+        return self._reducer(
             self._reducer(
                 self._get_right_accumulation(node[0], lower),
                 self._get_left_accumulation(node[1], upper),
@@ -119,9 +121,9 @@ class AccumulationTree(RBTree):
             if node.key == key:
                 break
             elif node.key < key:
-                node = node[0]
-            else:
                 node = node[1]
+            else:
+                node = node[0]
         return path
 
     def _update_accumulation(self, nodes):
@@ -132,7 +134,7 @@ class AccumulationTree(RBTree):
                         x[0].accumulation,
                         x[1].accumulation,
                     ),
-                    self._mapper(x.value)
+                    self._mapper(x.value),
                 )
             elif x[0]:
                 x.accumulation = self._reducer(

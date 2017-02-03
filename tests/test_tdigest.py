@@ -1,11 +1,16 @@
-from bintrees import FastRBTree as RBTree
 import pytest
 from numpy import random
 from numpy import percentile
 from numpy import bitwise_and
 from numpy import testing
 from tdigest.tdigest import TDigest, Centroid
+from tdigest.accumulation_tree import AccumulationTree
 
+def RBTree(data):
+    t = AccumulationTree(lambda centroid: centroid.count)
+    for k, v in data:
+        t.insert(k, v)
+    return t
 
 @pytest.fixture()
 def empty_tdigest():

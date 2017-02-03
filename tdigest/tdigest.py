@@ -1,9 +1,10 @@
 from __future__ import print_function
 
 from random import choice
-from bintrees import FastRBTree as RBTree
 import pyudorandom
 from itertools import chain
+
+from accumulation_tree import AccumulationTree
 
 class Centroid(object):
 
@@ -22,11 +23,10 @@ class Centroid(object):
         self.mean += weight * (x - self.mean) / self.count
         return
 
-
 class TDigest(object):
 
     def __init__(self, delta=0.01, K=25):
-        self.C = RBTree()
+        self.C = AccumulationTree(lambda centroid: centroid.count)
         self.n = 0
         self.delta = delta
         self.K = K
@@ -55,8 +55,7 @@ class TDigest(object):
 
     def _compute_centroid_quantile(self, centroid):
         denom = self.n
-        cumulative_sum = sum(
-            c_i.count for c_i in self.C.value_slice(-float('Inf'), centroid.mean))
+        cumulative_sum = self.C.get_left_accumulation(centroid.mean)
         return (centroid.count / 2. + cumulative_sum) / denom
 
     def _update_centroid(self, centroid, x, w):

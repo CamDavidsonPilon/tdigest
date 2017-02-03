@@ -1,10 +1,11 @@
 from __future__ import print_function
+from __future__ import absolute_import
 
 from random import choice
 import pyudorandom
 from itertools import chain
 
-from accumulation_tree import AccumulationTree
+from .accumulation_tree import AccumulationTree
 
 class Centroid(object):
 

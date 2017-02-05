@@ -17,7 +17,8 @@ setup(name='tdigest',
       long_description=read('README.md'),
       install_requires=[
           "bintrees",
-          "pyudorandom"
+          "pyudorandom",
+          "accumulation_tree",
       ],
       classifiers=[
         "Development Status :: 4 - Beta",

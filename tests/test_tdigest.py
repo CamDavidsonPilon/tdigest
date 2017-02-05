@@ -4,7 +4,7 @@ from numpy import percentile
 from numpy import bitwise_and
 from numpy import testing
 from tdigest.tdigest import TDigest, Centroid
-from tdigest.accumulation_tree import AccumulationTree
+from accumulation_tree import AccumulationTree
 
 def RBTree(data):
     t = AccumulationTree(lambda centroid: centroid.count)

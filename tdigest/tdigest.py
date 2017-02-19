@@ -2,7 +2,6 @@ from __future__ import print_function
 
 from random import choice
 from bintrees import FastRBTree as RBTree
-import pyudorandom
 from itertools import chain
 
 class Centroid(object):
@@ -34,9 +33,8 @@ class TDigest(object):
     def __add__(self, other_digest):
         data = list(chain(self.C.values(), other_digest.C.values()))
         new_digest = TDigest(self.delta, self.K)
-        
         if len(data) > 0:
-            for c in pyudorandom.items(data):
+            for c in sorted(data, key=lambda c_: -c_.count):
                 new_digest.update(c.mean, c.count)
 
         return new_digest
@@ -138,12 +136,12 @@ class TDigest(object):
     def compress(self):
         T = TDigest(self.delta, self.K)
         C = list(self.C.values())
-        for c_i in pyudorandom.items(C):
-            T.update(c_i.mean, c_i.count)
+        for c in sorted(C, key=lambda c_: -c_.count):
+            T.update(c.mean, c.count)
         self.C = T.C
 
     def percentile(self, p):
-        """ 
+        """
         Computes the percentile of a specific value in [0,100].
 
         """

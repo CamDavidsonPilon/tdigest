@@ -16,7 +16,7 @@ setup(name='tdigest',
       packages=['tdigest'],
       long_description=read('README.md'),
       install_requires=[
-          "bintrees",
+          "accumulation_tree",
           "pyudorandom"
       ],
       classifiers=[

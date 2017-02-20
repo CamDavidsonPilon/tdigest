@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.5.0
+ - updated to use new accumulation_tree library. This replacement means much better performance in updating the TDigest. 
+
 ### 0.4.1.0
  - fixed a bug in `trimmed_mean` that was giving incorrect results. Proper interpolation and tests correct this. 
 

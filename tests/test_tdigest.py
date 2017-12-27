@@ -85,8 +85,6 @@ class TestTDigest():
         assert empty_tdigest._compute_centroid_quantile(example_centroids[0.1]) == (1 / 2. + 2) / 4
         assert empty_tdigest._compute_centroid_quantile(example_centroids[1.5]) == (1 / 2. + 3) / 4
 
-
-
     def test_find_closest_centroids_works_with_positive_values(self, empty_tdigest, example_positive_centroids):
         empty_tdigest.C = example_positive_centroids
         assert empty_tdigest._find_closest_centroids(0.0) == [example_positive_centroids[0.5]]
@@ -95,8 +93,7 @@ class TestTDigest():
         assert empty_tdigest._find_closest_centroids(1.2) == [example_positive_centroids[1.1]]
         assert empty_tdigest._find_closest_centroids(1.4) == [example_positive_centroids[1.5]]
         assert empty_tdigest._find_closest_centroids(1.3) == [example_positive_centroids[1.5],
-                                                             example_positive_centroids[1.1]]
-
+                                                              example_positive_centroids[1.1]]
 
     def test_get_closest_centroids_works_with_negative_values(self, empty_tdigest, example_centroids):
         empty_tdigest.C = example_centroids
@@ -104,7 +101,6 @@ class TestTDigest():
         assert empty_tdigest._find_closest_centroids(-2.0) == [example_centroids[-1.1]]
         assert empty_tdigest._find_closest_centroids(-0.6) == [example_centroids[-0.5]]
         assert empty_tdigest._find_closest_centroids(-0.4) == [example_centroids[-0.5]]
-
 
     def test_compress(self, empty_tdigest, example_random_data):
         empty_tdigest.batch_update(example_random_data)
@@ -117,7 +113,7 @@ class TestTDigest():
     def test_data_comes_in_sorted_does_not_blow_up(self, empty_tdigest):
         t = TDigest()
         for x in range(10000):
-            t.update(x,1)
+            t.update(x, 1)
 
         assert len(t) < 5000
 
@@ -127,16 +123,26 @@ class TestTDigest():
 
     def test_extreme_percentiles_return_min_and_max(self, empty_tdigest):
         t = TDigest()
-        data = random.randn(100000)
+        data = random.randn(10000)
         t.batch_update(data)
-        assert t.percentile(0) == data.min()
         assert t.percentile(100.) == data.max()
+        assert t.percentile(0) == data.min()
+        assert t.percentile(0.1) > data.min()
+        assert t.percentile(0.999) < data.max()
 
     def test_negative_extreme_percentile_is_still_positive(self, empty_tdigest):
         # Test https://github.com/CamDavidsonPilon/tdigest/issues/16
         t = TDigest()
         t.batch_update([62.0, 202.0, 1415.0, 1433.0])
-        assert t.percentile(0.25) > 0
+        print(t.percentile(26))
+        assert t.percentile(26) > 0
+
+    def test_percentile_at_border_returns_value(self, empty_tdigest):
+        data = [62.0, 202.0, 1415.0, 1433.0]
+        t = TDigest()
+        t.batch_update(data)
+        assert t.percentile(25) == data[0]
+        assert t.percentile(26) > data[0]
 
     def test_adding_centroid_with_exisiting_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):
         td = empty_tdigest
@@ -145,16 +151,15 @@ class TestTDigest():
         td._add_centroid(Centroid(-1.1, 10))
         assert all([k == centroid.mean for k, centroid in td.C.items()])
 
-    def test_quantile_with_single_centroid(self, empty_tdigest):
+    def test_cdf_with_single_centroid(self, empty_tdigest):
         td = empty_tdigest
         td.update(1)
-        assert td.quantile(1) == 1
+        assert td.cdf(1) == 1
 
-    def test_quantile_with_single_centroid_at_zero(self, empty_tdigest):
+    def test_cdf_with_single_centroid_at_zero(self, empty_tdigest):
         td = empty_tdigest
         td.update(0)
-        assert td.quantile(0) == 1
-
+        assert td.cdf(0) == 1
 
 
 class TestStatisticalTests():
@@ -174,16 +179,11 @@ class TestStatisticalTests():
 
     def test_ints(self):
         t = TDigest()
-        t.batch_update([1,2,3])
-        assert t.percentile(50) == 2
+        t.batch_update([1, 2, 3])
+        assert abs(t.percentile(66.6666) - 2) < 0.0001
+        assert sum([c.count for c in t.C.values()]) == 3
 
-        t = TDigest()
-        x = [1,2,2,2,2,2,2,2,3]
-        t.batch_update(x)
-        assert t.percentile(50) == 2
-        assert sum([c.count for c in t.C.values()]) == len(x)
-
-    @pytest.mark.parametrize("percentile_range", [[0, 7], [27, 47], [39, 66], [81, 99], [77, 100], [0,100]])
+    @pytest.mark.parametrize("percentile_range", [[0, 7], [27, 47], [39, 66], [81, 99], [77, 100], [0, 100]])
     @pytest.mark.parametrize("data_size", [100, 1000, 5000])
     def test_trimmed_mean(self, percentile_range, data_size):
         p1 = percentile_range[0]
@@ -196,7 +196,8 @@ class TestStatisticalTests():
         tm_actual = t.trimmed_mean(p1, p2)
         tm_expected = x[bitwise_and(x >= percentile(x, p1), x <= percentile(x, p2))].mean()
 
-        testing.assert_allclose(tm_actual, tm_expected, rtol= 0.01, atol= 0.01)
+        testing.assert_allclose(tm_actual, tm_expected, rtol=0.01, atol=0.01)
+
 
 class TestCentroid():
 

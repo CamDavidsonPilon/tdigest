@@ -161,7 +161,7 @@ class TDigest(object):
         for i, key in enumerate(self.C.keys()):
             c_i_plus_one = self.C[key]
             if i == 0:
-                k = c_i_plus_one.count
+                k = c_i_plus_one.count / 2
 
             else:
                 k = (c_i_plus_one.count + c_i.count) / 2.

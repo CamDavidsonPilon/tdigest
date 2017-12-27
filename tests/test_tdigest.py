@@ -137,12 +137,11 @@ class TestTDigest():
         print(t.percentile(26))
         assert t.percentile(26) > 0
 
-    def test_percentile_at_border_returns_value(self, empty_tdigest):
+    def test_percentile_at_border_returns_an_intermediate_value(self, empty_tdigest):
         data = [62.0, 202.0, 1415.0, 1433.0]
         t = TDigest()
         t.batch_update(data)
-        assert t.percentile(25) == data[0]
-        assert t.percentile(26) > data[0]
+        assert t.percentile(25) == 132.0
 
     def test_adding_centroid_with_exisiting_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):
         td = empty_tdigest
@@ -169,7 +168,7 @@ class TestStatisticalTests():
         x = random.random(size=10000)
         t.batch_update(x)
 
-        assert abs(t.percentile(50) - 0.5) < 0.02
+        assert abs(t.percentile(50) - 0.5) < 0.01
         assert abs(t.percentile(10) - .1) < 0.01
         assert abs(t.percentile(90) - 0.9) < 0.01
         assert abs(t.percentile(1) - 0.01) < 0.005
@@ -180,8 +179,13 @@ class TestStatisticalTests():
     def test_ints(self):
         t = TDigest()
         t.batch_update([1, 2, 3])
-        assert abs(t.percentile(66.6666) - 2) < 0.0001
-        assert sum([c.count for c in t.C.values()]) == 3
+        assert abs(t.percentile(50) - 2) < 0.0001
+
+        t = TDigest()
+        x = [1, 2, 2, 2, 2, 2, 2, 2, 3]
+        t.batch_update(x)
+        assert t.percentile(50) == 2
+        assert sum([c.count for c in t.C.values()]) == len(x)
 
     @pytest.mark.parametrize("percentile_range", [[0, 7], [27, 47], [39, 66], [81, 99], [77, 100], [0, 100]])
     @pytest.mark.parametrize("data_size", [100, 1000, 5000])

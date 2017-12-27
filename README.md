@@ -54,7 +54,7 @@ sum_digest.percentile(30)  # about 0.3
  - `batch_update(x, w=1)`: update the tdigest with values in array `x` and weight `w`.
  - `compress()`: perform a compression on the underlying data structure that will shrink the memory footprint of it, without hurting accuracy. Good to perform after adding many values. 
  - `percentile(p)`: return the `p`th percentile. Example: `p=50` is the median.
- - `quantile(q)`: return the CDF the value `q` is at. 
+ - `cdf(x)`: return the CDF the value `x` is at. 
  - `trimmed_mean(p1, p2)`: return the mean of data set without the values below and above the `p1` and `p2` percentile respectively. 
 
  

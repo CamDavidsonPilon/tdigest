@@ -8,7 +8,7 @@ def read(fname):
 
 
 setup(name='tdigest',
-      version='0.4.1.0',
+      version='0.5.0.0',
       description='T-Digest data structure',
       author='Cam Davidson-pilon',
       author_email='cam.davidson.pilon@gmail.com',
@@ -16,7 +16,7 @@ setup(name='tdigest',
       packages=['tdigest'],
       long_description=read('README.md'),
       install_requires=[
-          "bintrees",
+          "accumulation_tree",
           "pyudorandom"
       ],
       classifiers=[
@@ -24,7 +24,6 @@ setup(name='tdigest',
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Topic :: Scientific/Engineering",
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         ],
       license="MIT",

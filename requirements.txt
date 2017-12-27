@@ -1,2 +1,2 @@
-bintrees
+accumulation_tree>=0.4.0
 pyudorandom>=1.0.0

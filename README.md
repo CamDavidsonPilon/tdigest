@@ -1,6 +1,6 @@
 # tdigest
 ### Efficient percentile estimation of streaming or distributed data
-[![Latest Version](https://pypip.in/v/tdigest/badge.png)](https://pypi.python.org/pypi/tdigest/)
+[![PyPI version](https://badge.fury.io/py/tdigest.svg)](https://badge.fury.io/py/tdigest)
 [![Build Status](https://travis-ci.org/CamDavidsonPilon/tdigest.svg?branch=master)](https://travis-ci.org/CamDavidsonPilon/tdigest)
 
 

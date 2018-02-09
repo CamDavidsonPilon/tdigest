@@ -1,2 +1,2 @@
-accumulation_tree>=0.4.0
+accumulation_tree>=0.5.0
 pyudorandom>=1.0.0

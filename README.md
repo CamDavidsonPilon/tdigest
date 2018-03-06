@@ -56,6 +56,8 @@ sum_digest.percentile(30)  # about 0.3
  - `percentile(p)`: return the `p`th percentile. Example: `p=50` is the median.
  - `cdf(x)`: return the CDF the value `x` is at. 
  - `trimmed_mean(p1, p2)`: return the mean of data set without the values below and above the `p1` and `p2` percentile respectively. 
+ - `serialize()`: return a Python dictionary of the TDigest and internal Centroid values.
+ - `deserialize()`: update from serialized dictionary values into the TDigest object.
 
  
 

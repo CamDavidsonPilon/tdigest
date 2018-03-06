@@ -246,7 +246,27 @@ class TDigest(object):
             delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
         return (diff / k_i - 0.5) * delta
 
+    def serialize(self):
+        """
+        Returns a Python dictionary of the TDigest and internal Centroid values.
 
+        """
+        centroids = []
+        for key in self.C.keys():
+            tree_values = self.C.get_value(key)
+            centroids.append({'m':tree_values.mean, 'c':tree_values.count})
+        return {'n':self.n, 'delta':self.delta, 'K':self.K, 'centroids':centroids}
+    
+    def deserialize(self, dict_values):
+        """
+        Updates from serialized dictionary values into the TDigest object.
+
+        """
+        self.n = dict_values['n']
+        self.delta = dict_values['delta']
+        self.K = dict_values['K']
+        [self.update(value['m'], value['c']) for value in dict_values['centroids']]
+        return self
 
 if __name__ == '__main__':
     from numpy import random

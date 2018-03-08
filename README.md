@@ -86,7 +86,7 @@ def encoder(digest_obj):
 ```
 Then pass the encoder function as the default parameter.
 ```
-json.dumps(digest, default=decoder)
+json.dumps(digest, default=encoder)
 ```
 
 

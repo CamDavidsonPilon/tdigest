@@ -47,6 +47,12 @@ class TDigest(object):
 
     def __repr__(self):
         return """<T-Digest: n=%d, centroids=%d>""" % (self.n, len(self))
+    
+    def __iter__(self):
+        """
+        Iterates over centroids in the digest.
+        """
+        return iter(self.centroids_to_list())
 
     def _add_centroid(self, centroid):
         if centroid.mean not in self.C:
@@ -246,6 +252,66 @@ class TDigest(object):
             delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
         return (diff / k_i - 0.5) * delta
 
+    def centroids_to_list(self):
+        """
+        Returns a Python list of the TDigest object's Centroid values.
+
+        """
+        centroids = []
+        for key in self.C.keys():
+            tree_values = self.C.get_value(key)
+            centroids.append({'m':tree_values.mean, 'c':tree_values.count})
+        return centroids
+    
+    def to_dict(self):
+        """
+        Returns a Python dictionary of the TDigest and internal Centroid values.
+        Or use centroids_to_list() for a list of only the Centroid values.
+
+        """
+        return {'n':self.n, 'delta':self.delta, 'K':self.K, 'centroids':self.centroids_to_list()}
+    
+    def update_from_dict(self, dict_values):
+        """
+        Updates TDigest object with dictionary values.
+
+        The digest delta and K values are optional if you would like to update them,
+        but the n value is not required because it is computed from the centroid weights.
+
+        For example, you can initalize a new TDigest:
+            digest = TDigest()
+        Then load dictionary values into the digest:
+            digest.update_from_dict({'K': 25, 'delta': 0.01, 'centroids': [{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}]})
+            
+        Or update an existing digest where the centroids will be appropriately merged:
+            digest = TDigest()
+            digest.update(1)
+            digest.update(2)
+            digest.update(3)
+            digest.update_from_dict({'K': 25, 'delta': 0.01, 'centroids': [{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}]})
+
+        Resulting in the digest having merged similar centroids by increasing their weight:
+            {'K': 25, 'delta': 0.01, 'centroids': [{'c': 2.0, 'm': 1.0}, {'c': 2.0, 'm': 2.0}, {'c': 2.0, 'm': 3.0}], 'n': 6.0}
+        
+        Alternative you can provide only a list of centroid values with update_centroids_from_list()
+        
+        """
+        self.delta = dict_values.get('delta', self.delta)
+        self.K = dict_values.get('K', self.K)
+        self.update_centroids_from_list(dict_values['centroids'])
+        return self
+    
+    def update_centroids_from_list(self, list_values):
+        """
+        Add or update Centroids from a Python list.
+        Any existing centroids in the digest object are appropriately updated.
+        
+        Example:
+            digest.update_centroids([{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}])
+        
+        """
+        [self.update(value['m'], value['c']) for value in list_values]
+        return self
 
 
 if __name__ == '__main__':

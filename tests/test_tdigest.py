@@ -42,6 +42,14 @@ def example_centroids():
 def example_random_data():
     return random.randn(100)
 
+@pytest.fixture()
+def sample_dict():
+    return {'K': 25, 'delta': 0.01, 'centroids': [{'c': 1.0, 'm': 0.0}, {'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}], 'n': 4}
+
+@pytest.fixture()
+def sample_centroid_list():
+    return [{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}]
+
 
 class TestTDigest():
 
@@ -160,6 +168,28 @@ class TestTDigest():
         td.update(0)
         assert td.cdf(0) == 1
 
+    def test_to_dict(self, empty_tdigest, sample_dict):
+        td = empty_tdigest
+        td.update(0)
+        td.update(1)
+        td.update(2)
+        td.update(3)
+        assert td.to_dict() == sample_dict
+    
+    def test_centroids_to_list(self, empty_tdigest, sample_centroid_list):
+        td = empty_tdigest
+        td.update(1)
+        td.update(2)
+        td.update(3)
+        assert td.centroids_to_list() == sample_centroid_list
+    
+    def test_update_from_dict(self, empty_tdigest, sample_dict):
+        td = empty_tdigest
+        assert td.update_from_dict(sample_dict).to_dict() == sample_dict
+    
+    def test_update_centroids_from_list(self, empty_tdigest, sample_centroid_list):
+        td = empty_tdigest
+        assert td.update_centroids_from_list(sample_centroid_list).centroids_to_list() == sample_centroid_list
 
 class TestStatisticalTests():
 

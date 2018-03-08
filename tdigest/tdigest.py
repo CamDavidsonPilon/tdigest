@@ -90,7 +90,7 @@ class TDigest(object):
         else:
             return [self.C[ceil_key]]
 
-    def _theshold(self, q):
+    def _threshold(self, q):
         return 4 * self.n * self.delta * q * (1 - q)
 
     def update(self, x, w=1):
@@ -114,11 +114,11 @@ class TDigest(object):
 
             # This filters the out centroids that do not satisfy the second part
             # of the definition of S. See original paper by Dunning.
-            if c_j.count + w > self._theshold(q):
+            if c_j.count + w > self._threshold(q):
                 S.pop(j)
                 continue
 
-            delta_w = min(self._theshold(q) - c_j.count, w)
+            delta_w = min(self._threshold(q) - c_j.count, w)
             self._update_centroid(c_j, x, delta_w)
             w -= delta_w
             S.pop(j)

@@ -47,6 +47,12 @@ class TDigest(object):
 
     def __repr__(self):
         return """<T-Digest: n=%d, centroids=%d>""" % (self.n, len(self))
+    
+    def __iter__(self):
+        """
+        Iterates over centroids in the digest.
+        """
+        return iter(self.centroids_to_list())
 
     def _add_centroid(self, centroid):
         if centroid.mean not in self.C:
@@ -292,9 +298,7 @@ class TDigest(object):
         """
         self.delta = dict_values.get('delta', self.delta)
         self.K = dict_values.get('K', self.K)
-        [self.update(value['m'], value['c']) for value in dict_values['centroids']]
-        
-            
+        self.update_centroids_from_list(dict_values['centroids'])
         return self
     
     def update_centroids_from_list(self, list_values):

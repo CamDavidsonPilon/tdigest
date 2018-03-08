@@ -46,6 +46,50 @@ sum_digest = digest + another_digest
 sum_digest.percentile(30)  # about 0.3
 ```
 
+#### To dict or serializing a digest with JSON
+
+You can use the to_dict() method to turn a TDigest object into a standard Python dictionary.
+```
+digest = TDigest()
+digest.update(1)
+digest.update(2)
+digest.update(3)
+print(digest.to_dict())
+```
+Or you can get only a list of Centroids with `centroids_to_list()`.
+```
+digest.centroids_to_list()
+```
+
+Similarly, you can restore a Python dict of digest values with `update_from_dict()`. Centroids are merged with any existing ones in the digest.
+For example, make a fresh digest and restore values from a python dictionary.
+```
+digest = TDigest()
+digest.update_from_dict({'K': 25, 'delta': 0.01, 'centroids': [{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}]})
+```
+
+K and delta values are optional, or you can provide only a list of centroids with `update_centroids_from_list()`.
+```
+digest = TDigest()
+digest.update_centroids([{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}])
+```
+
+If you want to serialize with other tools like JSON, you can first convert to_dict().
+```
+json.dumps(digest.to_dict())
+```
+
+Alternatively, make a custom encoder function to provide as default to the standard json module.
+```
+def encoder(digest_obj):
+    return digest_obj.to_dict()
+```
+Then pass the encoder function as the default parameter.
+```
+json.dumps(digest, default=decoder)
+```
+
+
 ### API 
 
 `TDigest.`

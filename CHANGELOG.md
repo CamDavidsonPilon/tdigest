@@ -1,5 +1,12 @@
 ## Changelog
 
+### 0.5.2
+ - added new methods onto `TDigest` object: 
+   - `to_dict()`: return a Python dictionary of the TDigest and internal   Centroid values.
+   - `update_from_dict(dict_values)`: update from serialized dictionary values   into the TDigest object.
+   - `centroids_to_list()`: return a Python list of the TDigest object's   internal Centroid values.
+   - `update_centroids_from_list(list_values)`: update Centroids from a python list.
+
 ### 0.5.0
  - updated to use new accumulation_tree library. This replacement means much better performance in updating the TDigest. 
  - TDigest is Python3 only going forward. 

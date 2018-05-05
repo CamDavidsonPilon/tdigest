@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.5.2.1
+ - Fixes pickling error when using PySpark.
+
 ### 0.5.2
  - added new methods onto `TDigest` object: 
    - `to_dict()`: return a Python dictionary of the TDigest and internal   Centroid values.

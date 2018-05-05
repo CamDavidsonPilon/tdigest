@@ -35,7 +35,7 @@ class TDigest(object):
 
     def __init__(self, delta=0.01, K=25):
 
-        self.C = AccumulationTree(_lambda)
+        self.C = AccumulationTree(_centroid_count)
         self.n = 0
         self.delta = delta
         self.K = K

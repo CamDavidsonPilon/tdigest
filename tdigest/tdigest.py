@@ -6,6 +6,13 @@ from accumulation_tree import AccumulationTree
 import pyudorandom
 
 
+def _centroid_count(centroid):
+    # this is defined at the top level because
+    # pyspark needs to pickle these functions properly
+    # See https://github.com/CamDavidsonPilon/tdigest/issues/42
+    return centroid.count
+
+
 class Centroid(object):
 
     def __init__(self, mean, count):
@@ -27,7 +34,8 @@ class Centroid(object):
 class TDigest(object):
 
     def __init__(self, delta=0.01, K=25):
-        self.C = AccumulationTree(lambda centroid: centroid.count)
+
+        self.C = AccumulationTree(_centroid_count)
         self.n = 0
         self.delta = delta
         self.K = K
@@ -47,7 +55,7 @@ class TDigest(object):
 
     def __repr__(self):
         return """<T-Digest: n=%d, centroids=%d>""" % (self.n, len(self))
-    
+
     def __iter__(self):
         """
         Iterates over centroids in the digest.
@@ -262,7 +270,7 @@ class TDigest(object):
             tree_values = self.C.get_value(key)
             centroids.append({'m':tree_values.mean, 'c':tree_values.count})
         return centroids
-    
+
     def to_dict(self):
         """
         Returns a Python dictionary of the TDigest and internal Centroid values.
@@ -270,7 +278,7 @@ class TDigest(object):
 
         """
         return {'n':self.n, 'delta':self.delta, 'K':self.K, 'centroids':self.centroids_to_list()}
-    
+
     def update_from_dict(self, dict_values):
         """
         Updates TDigest object with dictionary values.
@@ -282,7 +290,7 @@ class TDigest(object):
             digest = TDigest()
         Then load dictionary values into the digest:
             digest.update_from_dict({'K': 25, 'delta': 0.01, 'centroids': [{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}]})
-            
+
         Or update an existing digest where the centroids will be appropriately merged:
             digest = TDigest()
             digest.update(1)
@@ -292,23 +300,23 @@ class TDigest(object):
 
         Resulting in the digest having merged similar centroids by increasing their weight:
             {'K': 25, 'delta': 0.01, 'centroids': [{'c': 2.0, 'm': 1.0}, {'c': 2.0, 'm': 2.0}, {'c': 2.0, 'm': 3.0}], 'n': 6.0}
-        
+
         Alternative you can provide only a list of centroid values with update_centroids_from_list()
-        
+
         """
         self.delta = dict_values.get('delta', self.delta)
         self.K = dict_values.get('K', self.K)
         self.update_centroids_from_list(dict_values['centroids'])
         return self
-    
+
     def update_centroids_from_list(self, list_values):
         """
         Add or update Centroids from a Python list.
         Any existing centroids in the digest object are appropriately updated.
-        
+
         Example:
             digest.update_centroids([{'c': 1.0, 'm': 1.0}, {'c': 1.0, 'm': 2.0}, {'c': 1.0, 'm': 3.0}])
-        
+
         """
         [self.update(value['m'], value['c']) for value in list_values]
         return self

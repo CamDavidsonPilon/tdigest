@@ -175,18 +175,18 @@ class TestTDigest():
         td.update(2)
         td.update(3)
         assert td.to_dict() == sample_dict
-    
+
     def test_centroids_to_list(self, empty_tdigest, sample_centroid_list):
         td = empty_tdigest
         td.update(1)
         td.update(2)
         td.update(3)
         assert td.centroids_to_list() == sample_centroid_list
-    
+
     def test_update_from_dict(self, empty_tdigest, sample_dict):
         td = empty_tdigest
         assert td.update_from_dict(sample_dict).to_dict() == sample_dict
-    
+
     def test_update_centroids_from_list(self, empty_tdigest, sample_centroid_list):
         td = empty_tdigest
         assert td.update_centroids_from_list(sample_centroid_list).centroids_to_list() == sample_centroid_list
@@ -232,6 +232,30 @@ class TestStatisticalTests():
 
         testing.assert_allclose(tm_actual, tm_expected, rtol=0.01, atol=0.01)
 
+    def test_trimmed_mean_corner_cases(self):
+        td = TDigest()
+
+        mean = td.trimmed_mean(0, 100)
+        assert mean == 0
+
+        td.update(1)
+        mean = td.trimmed_mean(0, 100)
+        assert mean == 1
+
+        td.update(1000)
+        mean = td.trimmed_mean(0, 100)
+        assert mean == 500.5
+
+    def test_trimmed_mean_negative(self):
+        td = TDigest()
+        for i in range(100):
+            td.update(random.random())
+
+        for i in range(10):
+            td.update(i*100)
+
+        mean = td.trimmed_mean(1, 99)
+        assert mean >= 0
 
 class TestCentroid():
 

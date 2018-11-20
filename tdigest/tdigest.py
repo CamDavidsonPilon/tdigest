@@ -222,43 +222,32 @@ class TDigest(object):
         if not (p1 < p2):
             raise ValueError("p1 must be between 0 and 100 and less than p2.")
 
-        s = k = t = 0
-        p1 /= 100.
-        p2 /= 100.
-        p1 *= self.n
-        p2 *= self.n
-        for i, key in enumerate(self.C.keys()):
-            c_i = self.C[key]
-            k_i = c_i.count
-            if p1 < t + k_i:
-                if t < p1:
-                    nu = self.__interpolate(i,key,p1-t)
-                else:
-                    nu = 1
-                s += nu * k_i * c_i.mean
-                k += nu * k_i
+        min_count = p1 / 100. * self.n
+        max_count = p2 / 100. * self.n
 
-            if p2 < t + k_i:
-                nu = self.__interpolate(i,key,p2-t)
-                s -= nu * k_i * c_i.mean
-                k -= nu * k_i
+        trimmed_sum = trimmed_count = curr_count = 0
+        for i, c in enumerate(self.C.values()):
+            next_count = curr_count + c.count
+            if next_count <= min_count:
+                curr_count = next_count
+                continue
+
+            count = c.count
+            if curr_count < min_count:
+                count = next_count - min_count
+            if next_count > max_count:
+                count -= next_count - max_count
+
+            trimmed_sum += count * c.mean
+            trimmed_count += count
+
+            if next_count >= max_count:
                 break
+            curr_count = next_count
 
-            t += k_i
-
-        return s/k
-
-    def __interpolate(self, i, key, diff):
-        c_i = self.C[key]
-        k_i = c_i.count
-
-        if i == 0:
-            delta = self.C.succ_item(key)[1].mean - c_i.mean
-        elif i == len(self) - 1:
-            delta = c_i.mean - self.C.prev_item(key)[1].mean
-        else:
-            delta = (self.C.succ_item(key)[1].mean - self.C.prev_item(key)[1].mean) / 2.
-        return (diff / k_i - 0.5) * delta
+        if trimmed_count == 0:
+            return 0
+        return trimmed_sum / trimmed_count
 
     def centroids_to_list(self):
         """
@@ -335,8 +324,3 @@ if __name__ == '__main__':
     print(abs(T1.percentile(1) - 0.01))
     print(abs(T1.percentile(0.1) - 0.001))
     print(T1.trimmed_mean(0.5, 1.))
-
-
-
-
-

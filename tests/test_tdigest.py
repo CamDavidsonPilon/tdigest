@@ -216,6 +216,11 @@ class TestStatisticalTests():
         t.batch_update(x)
         assert t.percentile(50) == 2
         assert sum([c.count for c in t.C.values()]) == len(x)
+        
+        t = TDigest()
+        t.batch_update([1, 1, 2, 2, 3, 4, 4, 4, 5, 5])
+        assert t.percentile(30) == 2
+        assert t.percentile(40) == 3.5        
 
     @pytest.mark.parametrize("percentile_range", [[0, 7], [27, 47], [39, 66], [81, 99], [77, 100], [0, 100]])
     @pytest.mark.parametrize("data_size", [100, 1000, 5000])

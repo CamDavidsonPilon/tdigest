@@ -182,7 +182,9 @@ class TDigest(object):
                 if p < t + k:
                     z1 = p - t
                     z2 = t + k - p
-                    return (c_i.mean * z2 + c_i_plus_one.mean * z1) / (z1 + z2)
+                    return (c_i.mean * z1 + c_i_plus_one.mean * z2) / (z1 + z2)
+                if p == t + K:
+                    return c_i_plus_one
             c_i = c_i_plus_one
             t += k
 

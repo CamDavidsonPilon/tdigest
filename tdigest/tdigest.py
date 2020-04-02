@@ -184,7 +184,7 @@ class TDigest(object):
                     z2 = t + k - p
                     return (c_i.mean * z1 + c_i_plus_one.mean * z2) / (z1 + z2)
                 if p == t + k:
-                    return c_i_plus_one
+                    return c_i_plus_one.mean
             c_i = c_i_plus_one
             t += k
 

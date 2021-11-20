@@ -142,7 +142,6 @@ class TestTDigest():
         # Test https://github.com/CamDavidsonPilon/tdigest/issues/16
         t = TDigest()
         t.batch_update([62.0, 202.0, 1415.0, 1433.0])
-        print(t.percentile(26))
         assert t.percentile(26) > 0
 
     def test_percentile_at_border_returns_an_intermediate_value(self, empty_tdigest):
@@ -155,7 +154,6 @@ class TestTDigest():
         data = [1, 10, 10, 10, 10, 100, 100, 100, 100, 1000]
         t = TDigest()
         t.batch_update(data)
-        print(t.centroids_to_list())
         assert t.percentile(40) == 32.5
 
     def test_adding_centroid_with_existing_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):

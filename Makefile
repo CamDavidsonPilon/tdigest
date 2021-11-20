@@ -23,21 +23,21 @@ env:
 	fi
 
 test: env
-	./env/bin/py.test tests --timeout=$(TEST_TIMEOUT)
+	./env/bin/python -m pytest tests --timeout=$(TEST_TIMEOUT)
 
 test1: env
-	./env/bin/py.test -x --ff tests --timeout=$(TEST_TIMEOUT)
+	./env/bin/python -m pytest -x --ff tests --timeout=$(TEST_TIMEOUT)
 
 shippabletest: env
 	mkdir -p shippable/testresults shippable/codecoverage
-	./env/bin/py.test \
+	./env/bin/python -m pytest \
 	     --cov-report xml \
 	     --cov=$(PROJ) \
 	     --junitxml=shippable/testresults/pytest.xml tests
 	mv coverage.xml shippable/codecoverage/
 
 travistest: env
-	./env/bin/py.test -v \
+	./env/bin/python -m pytest -v \
 	     --cov-report xml \
 	     --cov-report term \
 	     --cov-report html \
@@ -45,7 +45,7 @@ travistest: env
 	     --junitxml=testresults.xml tests
 
 clean:
-	rm -rf env build dist *.egg *.egg-info 
+	rm -rf env build dist *.egg *.egg-info
 
 package:
 	$(PYTHON) setup.py bdist_wheel
@@ -68,4 +68,4 @@ release:
 	git push
 	git push --tags
 
-.PHONY: default package deploy release clean 
+.PHONY: default package deploy release clean

@@ -151,7 +151,14 @@ class TestTDigest():
         t.batch_update(data)
         assert t.percentile(25) == 132.0
 
-    def test_adding_centroid_with_exisiting_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):
+    def test_percentile_weighted_interpolation(self, empty_tdigest):
+        data = [1, 10, 10, 10, 10, 100, 100, 100, 100, 1000]
+        t = TDigest()
+        t.batch_update(data)
+        print(t.centroids_to_list())
+        assert t.percentile(40) == 32.5
+
+    def test_adding_centroid_with_existing_key_does_not_break_synchronicity(self, empty_tdigest, example_centroids):
         td = empty_tdigest
         td.C = example_centroids
         assert -1.1 in td.C
@@ -220,7 +227,7 @@ class TestStatisticalTests():
         t = TDigest()
         t.batch_update([1, 1, 2, 2, 3, 4, 4, 4, 5, 5])
         assert t.percentile(30) == 2
-        assert t.percentile(40)*3 == 7
+        assert t.percentile(40)*3 == 8
 
     @pytest.mark.parametrize("percentile_range", [[0, 7], [27, 47], [39, 66], [81, 99], [77, 100], [0, 100]])
     @pytest.mark.parametrize("data_size", [100, 1000, 5000])

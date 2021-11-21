@@ -179,12 +179,10 @@ class TDigest(object):
 
             else:
                 k = (c_i_plus_one.count + c_i.count) / 2.
-                if p < t + k:
+                if p <= t + k:
                     z1 = p - t
                     z2 = t + k - p
-                    return (c_i.mean * z1 + c_i_plus_one.mean * z2) / (z1 + z2)
-                if p == t + k:
-                    return c_i_plus_one.mean
+                    return (c_i.mean * z2 + c_i_plus_one.mean * z1) / k
             c_i = c_i_plus_one
             t += k
 

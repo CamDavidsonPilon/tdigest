@@ -268,8 +268,8 @@ class TDigest(object):
         """
         return {'n':self.n, 'delta':self.delta, 'K':self.K, 'centroids':self.centroids_to_list()}
 
-    @staticmethod
-    def from_dict(d:dict):
+    @classmethod
+    def from_dict(cls, d:dict):
        t = TDigest()
        for c in d['centroids']:
            ci = Centroid(c['m'],c['c'])

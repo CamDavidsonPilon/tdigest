@@ -181,6 +181,22 @@ class TestTDigest():
         td.update(3)
         assert td.to_dict() == sample_dict
 
+    def test_from_dict(self, empty_tdigest, sample_dict):
+        td0 = TDigest().update_from_dict(sample_dict)
+        td1 = TDigest.from_dict(sample_dict)
+        for val in [-2,4,17]:
+            assert abs(td0.cdf(val)-td1.cdf(val))<0.0001
+
+    def test_from_dict_random(self, example_random_data):
+        import numpy as np
+        t = TDigest()
+        t.batch_update(example_random_data)
+        td = t.to_dict()
+        td0 = TDigest().update_from_dict(td)
+        td1 = TDigest.from_dict(td)
+        for val in [0.2,0.5,1.4]:
+            assert abs(td0.cdf(val)-td1.cdf(val))<0.0001
+
     def test_centroids_to_list(self, empty_tdigest, sample_centroid_list):
         td = empty_tdigest
         td.update(1)

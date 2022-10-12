@@ -268,6 +268,17 @@ class TDigest(object):
         """
         return {'n':self.n, 'delta':self.delta, 'K':self.K, 'centroids':self.centroids_to_list()}
 
+    @classmethod
+    def from_dict(cls, d:dict):
+       t = TDigest()
+       for c in d['centroids']:
+           ci = Centroid(c['m'],c['c'])
+           t.C.insert(c['m'], ci)
+       t.K = d['K']
+       t.delta = d['delta']
+       t.n = d['n']
+       return t 
+    
     def update_from_dict(self, dict_values):
         """
         Updates TDigest object with dictionary values.
